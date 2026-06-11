@@ -2,17 +2,38 @@ import type { ScoredArtist } from "@/lib/types";
 
 type ArtistCardProps = {
   result: ScoredArtist;
+  featured?: boolean;
 };
 
-function formatFollowers(followers: number) {
-  return new Intl.NumberFormat("en-GB", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(followers);
+function getReasons(result: ScoredArtist) {
+  const reasons: string[] = [];
+
+  if (result.demandScore >= 80) {
+    reasons.push("Strong local demand");
+  }
+
+  if (result.capacityFitScore >= 85) {
+    reasons.push("Good fit for your room");
+  }
+
+  if (result.budgetFitScore >= 85) {
+    reasons.push("Fits the budget");
+  }
+
+  if (result.momentumScore >= 78) {
+    reasons.push("Momentum looks healthy");
+  }
+
+  if (reasons.length < 3 && result.artist.recentNearbyEvents[0]) {
+    reasons.push(result.artist.recentNearbyEvents[0]);
+  }
+
+  return reasons.slice(0, 3);
 }
 
-export function ArtistCard({ result }: ArtistCardProps) {
+export function ArtistCard({ result, featured = false }: ArtistCardProps) {
   const { artist } = result;
+  const reasons = getReasons(result);
   const verdictClass =
     result.verdict === "Book"
       ? "verdictPill verdictBook"
@@ -21,76 +42,50 @@ export function ArtistCard({ result }: ArtistCardProps) {
         : "verdictPill verdictPass";
 
   return (
-    <article className="artistCard">
-      <div className="artistCardTop">
+    <article className={featured ? "artistCard featuredCard" : "artistCard"}>
+      <div className="artistHeader">
         <div>
-          <p className="rankPill">Rank #{result.rank}</p>
+          <p className="rankPill">{featured ? "Best option" : `Option ${result.rank}`}</p>
           <h3>{artist.name}</h3>
-          <p className="muted">
-            {artist.genres.join(" / ")} · Based in {artist.homeCity}
+          <p className="artistMeta">
+            {artist.genres.join(" / ")} · {artist.homeCity}
           </p>
         </div>
-        <div className="scoreBlock">
-          <span>Commercial booking score</span>
-          <strong>{result.totalScore}</strong>
+        <div className="scoreBadgeWrap">
+          <div className="scoreBadge">{Math.round(result.totalScore)}</div>
           <p className={verdictClass}>{result.verdict}</p>
         </div>
       </div>
 
-      <div className="signalGrid">
-        <div>
-          <span>Expected turnout</span>
+      <div className="headlineStrip">
+        <div className="headlineTile">
+          <span>Likely tickets</span>
           <strong>
             {result.expectedTicketsLow}-{result.expectedTicketsHigh}
           </strong>
-          <p>
-            {result.expectedFillLow}-{result.expectedFillHigh}% of capacity
-          </p>
         </div>
-        <div>
-          <span>Local draw</span>
-          <strong>{result.demandScore}/100</strong>
+        <div className="headlineTile">
+          <span>Likely fill</span>
+          <strong>
+            {result.expectedFillLow}-{result.expectedFillHigh}%
+          </strong>
         </div>
-        <div>
-          <span>Room fit</span>
-          <strong>{result.capacityFitScore}/100</strong>
-        </div>
-        <div>
-          <span>Fee fit</span>
-          <strong>{result.budgetFitScore}/100</strong>
+        <div className="headlineTile">
+          <span>Fee range</span>
+          <strong>
+            {artist.baseFeeMin}-{artist.baseFeeMax}
+          </strong>
         </div>
       </div>
 
-      <div className="metaGrid">
-        <div className="metaCard">
-          <span>Audience proxy</span>
-          <strong>Spotify popularity {artist.spotifyPopularity}/100</strong>
-          <p>{formatFollowers(artist.spotifyFollowers)} follower signal</p>
-        </div>
-        <div className="metaCard">
-          <span>Social response proxy</span>
-          <strong>{artist.instagramEngagementRate}% engagement</strong>
-          <p>Mock signal for current audience responsiveness</p>
-        </div>
-        <div className="metaCard">
-          <span>Market proof</span>
-          <strong>{result.eventHistoryScore}/100</strong>
-          <p>{artist.recentNearbyEvents[0]}</p>
-        </div>
-      </div>
+      <p className="commercialLine">{result.commercialSummary}</p>
 
-      <div className="historyBlock">
-        <span>Recent nearby activity</span>
-        <ul>
-          {artist.recentNearbyEvents.map((event) => (
-            <li key={event}>{event}</li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="whyBlock">
-        <span>Commercial read</span>
-        <p>{result.commercialSummary}</p>
+      <div className="reasonRow">
+        {reasons.map((reason) => (
+          <div key={reason} className="reasonChip">
+            {reason}
+          </div>
+        ))}
       </div>
     </article>
   );

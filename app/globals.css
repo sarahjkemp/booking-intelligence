@@ -1,16 +1,15 @@
 :root {
   color-scheme: dark;
-  --bg: #07131a;
-  --bg-soft: #10202a;
-  --panel: rgba(10, 24, 31, 0.88);
-  --panel-border: rgba(154, 183, 199, 0.14);
-  --text: #eef6f8;
-  --muted: #9cb5bf;
-  --accent: #f6b94d;
-  --accent-2: #82d4c1;
-  --danger: #ff8d77;
-  --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
-  --radius: 22px;
+  --bg: #081116;
+  --panel: #0f1a20;
+  --panel-2: #132129;
+  --line: rgba(255, 255, 255, 0.08);
+  --text: #f1f6f7;
+  --muted: #9eb2ba;
+  --accent: #f0b24f;
+  --accent-2: #8ed3bc;
+  --danger: #ff8f79;
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
 }
 
 * {
@@ -20,9 +19,9 @@
 html {
   min-height: 100%;
   background:
-    radial-gradient(circle at top left, rgba(130, 212, 193, 0.16), transparent 28%),
-    radial-gradient(circle at top right, rgba(246, 185, 77, 0.14), transparent 22%),
-    linear-gradient(180deg, #081117 0%, #091a22 52%, #07131a 100%);
+    radial-gradient(circle at top left, rgba(142, 211, 188, 0.14), transparent 24%),
+    radial-gradient(circle at top right, rgba(240, 178, 79, 0.16), transparent 24%),
+    linear-gradient(180deg, #071015 0%, #0a161d 100%);
 }
 
 body {
@@ -38,133 +37,89 @@ input {
 }
 
 .shell {
-  width: min(1280px, calc(100% - 32px));
+  width: min(1220px, calc(100% - 24px));
   margin: 0 auto;
-  padding: 32px 0 56px;
+  padding: 22px 0 48px;
 }
 
-.hero {
-  display: grid;
-  grid-template-columns: 1.4fr 0.8fr;
-  gap: 18px;
-  margin-bottom: 20px;
-}
-
-.heroCopy,
-.heroStats,
-.panel {
-  border: 1px solid var(--panel-border);
-  background: var(--panel);
-  backdrop-filter: blur(16px);
+.topBanner {
+  padding: 26px 28px;
+  margin-bottom: 18px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: rgba(12, 24, 31, 0.92);
   box-shadow: var(--shadow);
-  border-radius: var(--radius);
 }
 
-.heroCopy {
-  padding: 34px;
-}
-
-.heroCopy h1 {
-  margin: 8px 0 16px;
+.topBanner h1 {
+  margin: 8px 0 10px;
+  max-width: 11ch;
   font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
-  font-size: clamp(2.5rem, 4vw, 4.5rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  max-width: 10ch;
+  font-size: clamp(2.7rem, 5vw, 5rem);
+  line-height: 0.94;
+  letter-spacing: -0.05em;
 }
 
 .heroText {
   margin: 0;
-  max-width: 60ch;
   color: var(--muted);
-  line-height: 1.6;
-}
-
-.heroStats {
-  padding: 24px;
-  display: grid;
-  gap: 14px;
-  align-content: stretch;
-}
-
-.heroStats div,
-.metaCard,
-.signalGrid div {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 18px;
-  padding: 16px;
-}
-
-.heroStats span,
-.metaCard span,
-.signalGrid span,
-.historyBlock span,
-.whyBlock span,
-.weightsNote span,
-.fieldLabel,
-.scoreBlock span {
-  display: block;
-  color: var(--muted);
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.heroStats strong,
-.metaCard strong,
-.signalGrid strong {
-  display: block;
-  margin-top: 10px;
-  font-size: 1.1rem;
+  font-size: 1.08rem;
 }
 
 .workspace {
   display: grid;
-  grid-template-columns: 400px 1fr;
+  grid-template-columns: 360px 1fr;
   gap: 18px;
 }
 
-.panel {
-  padding: 24px;
+.briefPanel,
+.resultsPanel,
+.artistCard,
+.launchState {
+  border: 1px solid var(--line);
+  background: rgba(12, 24, 31, 0.92);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
 }
 
-.panelHeading {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
+.briefPanel,
+.resultsPanel {
+  padding: 22px;
+}
+
+.briefHeader {
+  display: grid;
+  gap: 14px;
   margin-bottom: 18px;
 }
 
-.panelHeading h2 {
+.briefHeader h2,
+.launchState h2 {
   margin: 4px 0 0;
-  font-size: 1.5rem;
+  font-size: 1.85rem;
+  line-height: 1.02;
 }
 
 .eyebrow,
-.rankPill {
+.rankPill,
+.sectionTag,
+.launchBadge {
   margin: 0;
   color: var(--accent-2);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
 }
 
-.submitButton,
-.genreChip {
+.submitButton {
   border: 0;
   cursor: pointer;
-  transition: 160ms ease;
-}
-
-.submitButton {
-  padding: 14px 18px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--accent) 0%, #ef8e38 100%);
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f5bf61 0%, #eb9847 100%);
   color: #10202a;
-  font-weight: 700;
-  box-shadow: 0 12px 24px rgba(246, 185, 77, 0.22);
+  font-size: 1.15rem;
+  font-weight: 800;
 }
 
 .submitButton:disabled {
@@ -172,170 +127,233 @@ input {
   cursor: wait;
 }
 
-.formGrid {
+.simpleGrid {
   display: grid;
-  gap: 14px;
-  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 label {
   display: grid;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--muted);
 }
 
 input {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  min-height: 62px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
   color: var(--text);
-  padding: 14px 15px;
+  padding: 14px 16px;
+  font-size: 1.1rem;
+}
+
+.genreBlock {
+  margin-top: 16px;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.82rem;
 }
 
 .chipRow {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 10px;
 }
 
 .genreChip {
-  padding: 10px 14px;
+  border: 0;
+  cursor: pointer;
+  padding: 12px 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: #17242c;
   color: var(--muted);
 }
 
 .genreChip.active {
-  background: rgba(130, 212, 193, 0.16);
+  background: rgba(142, 211, 188, 0.18);
   color: var(--text);
-  outline: 1px solid rgba(130, 212, 193, 0.35);
+  outline: 1px solid rgba(142, 211, 188, 0.3);
 }
 
-.weightsNote {
-  margin-top: 18px;
-  padding: 16px;
-  border-radius: 16px;
-  background: rgba(130, 212, 193, 0.08);
-}
-
-.weightsNote p,
-.metaCard p,
-.signalGrid p,
-.whyBlock p,
-.emptyState p,
-.muted {
-  margin: 8px 0 0;
+.microNote {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
   color: var(--muted);
-  line-height: 1.55;
+  line-height: 1.45;
 }
 
-.resultsList {
+.launchState {
+  min-height: 420px;
   display: grid;
-  gap: 14px;
+  align-content: center;
+  gap: 12px;
+  padding: 28px;
+}
+
+.launchState p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.resultsStack {
+  display: grid;
+  gap: 12px;
 }
 
 .artistCard {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.025);
 }
 
-.artistCardTop {
+.featuredCard {
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(240, 178, 79, 0.08), rgba(240, 178, 79, 0.02)),
+    rgba(12, 24, 31, 0.95);
+}
+
+.artistHeader {
   display: flex;
   justify-content: space-between;
   gap: 14px;
   align-items: flex-start;
-  margin-bottom: 16px;
 }
 
-.artistCardTop h3 {
-  margin: 6px 0 0;
-  font-size: 1.65rem;
+.artistHeader h3 {
+  margin: 6px 0 4px;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 0.95;
 }
 
-.scoreBlock {
-  min-width: 128px;
-  text-align: right;
+.artistMeta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
 }
 
-.scoreBlock strong {
-  display: block;
-  margin-top: 6px;
-  font-size: 2.1rem;
-  color: var(--accent);
+.scoreBadgeWrap {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
 }
 
-.scoreBlock p {
-  margin: 10px 0 0;
+.scoreBadge {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #f4be5e 0%, #ec9c4a 100%);
+  color: #10202a;
+  font-size: 2rem;
+  font-weight: 900;
 }
 
 .verdictPill {
   display: inline-block;
-  padding: 7px 12px;
+  padding: 8px 14px;
   border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .verdictBook {
-  background: rgba(130, 212, 193, 0.16);
+  background: rgba(142, 211, 188, 0.18);
   color: var(--accent-2);
 }
 
 .verdictWatch {
-  background: rgba(246, 185, 77, 0.14);
+  background: rgba(240, 178, 79, 0.16);
   color: var(--accent);
 }
 
 .verdictPass {
-  background: rgba(255, 141, 119, 0.14);
+  background: rgba(255, 143, 121, 0.16);
   color: var(--danger);
 }
 
-.signalGrid,
-.metaGrid {
+.headlineStrip {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.headlineTile {
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--panel-2);
+}
+
+.headlineTile span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.headlineTile strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.commercialLine {
+  margin: 18px 0 0;
+  color: var(--text);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.reasonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.reasonChip {
+  padding: 12px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.compactList {
   gap: 12px;
 }
 
-.signalGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.compactList .artistCard {
+  padding: 18px;
 }
 
-.metaGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 12px;
+.compactList .artistHeader h3 {
+  font-size: 1.6rem;
 }
 
-.historyBlock,
-.whyBlock {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.compactList .scoreBadge {
+  width: 72px;
+  height: 72px;
+  font-size: 1.5rem;
 }
 
-.historyBlock ul {
-  margin: 10px 0 0;
-  padding-left: 18px;
-  color: var(--muted);
-}
-
-.historyBlock li + li {
-  margin-top: 6px;
-}
-
-.emptyState {
-  min-height: 240px;
-  display: grid;
-  place-items: center;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
+.sectionTag {
+  margin-top: 8px;
 }
 
 .errorText {
@@ -345,35 +363,34 @@ input {
 
 @media (max-width: 1100px) {
   .workspace,
-  .hero,
-  .signalGrid,
-  .metaGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .formGrid {
+  .headlineStrip {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 720px) {
   .shell {
-    width: min(100% - 20px, 1280px);
-    padding-top: 20px;
+    width: min(100% - 16px, 1220px);
+    padding-top: 14px;
   }
 
-  .heroCopy,
-  .heroStats,
-  .panel {
+  .topBanner,
+  .briefPanel,
+  .resultsPanel,
+  .artistCard {
     padding: 18px;
+    border-radius: 22px;
   }
 
-  .artistCardTop,
-  .panelHeading {
+  .artistHeader {
     display: grid;
   }
 
-  .scoreBlock {
-    text-align: left;
+  .scoreBadgeWrap {
+    justify-items: start;
+  }
+
+  .headlineTile strong {
+    font-size: 1.45rem;
   }
 }

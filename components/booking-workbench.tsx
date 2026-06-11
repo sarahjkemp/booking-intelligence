@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArtistCard } from "@/components/artist-card";
 import { genreOptions, type ScoredArtist, type SearchInput } from "@/lib/types";
 
@@ -19,6 +19,9 @@ export function BookingWorkbench() {
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const featuredResult = results[0];
+  const remainingResults = useMemo(() => results.slice(1), [results]);
 
   function toggleGenre(genre: (typeof genreOptions)[number]) {
     setForm((current) => {
@@ -58,7 +61,7 @@ export function BookingWorkbench() {
       setResults(payload.recommendations);
       setHasSearched(true);
     } catch {
-      setError("Unable to fetch recommendations right now.");
+      setError("Unable to score acts right now.");
       setResults([]);
       setHasSearched(true);
     } finally {
@@ -68,47 +71,29 @@ export function BookingWorkbench() {
 
   return (
     <div className="shell">
-      <section className="hero">
-        <div className="heroCopy">
-          <p className="eyebrow">Commercial booking score</p>
-          <h1>Score acts by how commercially viable they look for your room.</h1>
-          <p className="heroText">
-            Built for independent venues that do not want more dashboards. Enter the room profile,
-            date and budget, then get a ranked booking score, commercial verdict and expected
-            turnout range for each act.
-          </p>
-        </div>
-        <div className="heroStats">
-          <div>
-            <span>Inputs</span>
-            <strong>Market, date, room, fee</strong>
-          </div>
-          <div>
-            <span>Outputs</span>
-            <strong>Score, verdict, turnout band</strong>
-          </div>
-          <div>
-            <span>Mode</span>
-            <strong>Commercial MVP, data-ready later</strong>
-          </div>
-        </div>
+      <section className="topBanner">
+        <p className="eyebrow">Booking score</p>
+        <h1>Find the act most likely to shift tickets.</h1>
+        <p className="heroText">
+          Put in the basics. Get a blunt commercial answer.
+        </p>
       </section>
 
       <section className="workspace">
-        <form className="panel formPanel" onSubmit={handleSubmit}>
-          <div className="panelHeading">
+        <form className="briefPanel" onSubmit={handleSubmit}>
+          <div className="briefHeader">
             <div>
-              <p className="eyebrow">Booking brief</p>
-              <h2>Commercial inputs</h2>
+              <p className="eyebrow">Quick brief</p>
+              <h2>What are you trying to fill?</h2>
             </div>
             <button className="submitButton" type="submit" disabled={isLoading}>
-              {isLoading ? "Scoring acts..." : "Score shortlist"}
+              {isLoading ? "Scoring..." : "Get score"}
             </button>
           </div>
 
-          <div className="formGrid">
+          <div className="simpleGrid">
             <label>
-              Venue city
+              City
               <input
                 value={form.city}
                 onChange={(event) => setForm({ ...form, city: event.target.value })}
@@ -117,7 +102,7 @@ export function BookingWorkbench() {
             </label>
 
             <label>
-              Venue capacity
+              Capacity
               <input
                 type="number"
                 min="50"
@@ -127,7 +112,7 @@ export function BookingWorkbench() {
             </label>
 
             <label>
-              Available date
+              Date
               <input
                 type="date"
                 value={form.date}
@@ -136,18 +121,7 @@ export function BookingWorkbench() {
             </label>
 
             <label>
-              Budget min
-              <input
-                type="number"
-                min="0"
-                step="100"
-                value={form.budgetMin}
-                onChange={(event) => setForm({ ...form, budgetMin: Number(event.target.value) })}
-              />
-            </label>
-
-            <label>
-              Budget max
+              Max budget
               <input
                 type="number"
                 min="0"
@@ -158,8 +132,8 @@ export function BookingWorkbench() {
             </label>
           </div>
 
-          <div>
-            <span className="fieldLabel">Genre preferences</span>
+          <div className="genreBlock">
+            <span className="fieldLabel">Pick your genres</span>
             <div className="chipRow">
               {genreOptions.map((genre) => {
                 const active = form.genres.includes(genre);
@@ -177,37 +151,36 @@ export function BookingWorkbench() {
             </div>
           </div>
 
-          <div className="weightsNote">
-            <span>What drives the score</span>
-            <p>
-              Local demand 30% · Genre match 20% · Venue capacity fit 15% · Recent momentum 15% ·
-              Nearby performance history 10% · Budget fit 10%
-            </p>
+          <div className="microNote">
+            Score uses local demand, room fit, recent momentum and fee fit.
           </div>
         </form>
 
-        <div className="panel resultsPanel">
-          <div className="panelHeading">
-            <div>
-              <p className="eyebrow">Ranked commercial reads</p>
-              <h2>Booking shortlist</h2>
-            </div>
-          </div>
-
+        <section className="resultsPanel">
           {!hasSearched ? (
-            <div className="emptyState">
-              <p>Use the default brief or update the inputs, then score the shortlist.</p>
+            <div className="launchState">
+              <div className="launchBadge">Top call</div>
+              <h2>Press “Get score” and we’ll tell you who looks safest.</h2>
+              <p>Big answer first. No dashboard archaeology.</p>
             </div>
           ) : null}
 
           {error ? <p className="errorText">{error}</p> : null}
 
-          <div className="resultsList">
-            {results.map((result) => (
-              <ArtistCard key={result.artist.id} result={result} />
-            ))}
-          </div>
-        </div>
+          {featuredResult ? (
+            <div className="resultsStack">
+              <div className="sectionTag">Best booking call</div>
+              <ArtistCard result={featuredResult} featured />
+
+              <div className="sectionTag">Other options</div>
+              <div className="resultsList compactList">
+                {remainingResults.map((result) => (
+                  <ArtistCard key={result.artist.id} result={result} />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </section>
       </section>
     </div>
   );
