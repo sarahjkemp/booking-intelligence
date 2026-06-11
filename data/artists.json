@@ -1,0 +1,234 @@
+[
+  {
+    "id": "neon-harbor",
+    "name": "Neon Harbor",
+    "genres": ["indie", "pop"],
+    "homeCity": "Manchester",
+    "baseFeeMin": 2500,
+    "baseFeeMax": 4500,
+    "preferredCapacityMin": 250,
+    "preferredCapacityMax": 600,
+    "localDemandByCity": {
+      "manchester": 91,
+      "liverpool": 79,
+      "leeds": 71,
+      "bristol": 58,
+      "glasgow": 64,
+      "london": 67
+    },
+    "momentumScore": 84,
+    "nearbyEventHistoryScore": 76,
+    "spotifyPopularity": 63,
+    "spotifyFollowers": 142000,
+    "instagramEngagementRate": 4.9,
+    "recentNearbyEvents": [
+      "Sold out 420-cap room in Liverpool",
+      "Supported a breakout indie act in Leeds",
+      "Strong presales on recent Manchester headline date"
+    ],
+    "notes": "A reliable mid-tier indie-pop draw with strong regional awareness."
+  },
+  {
+    "id": "static-velvet",
+    "name": "Static Velvet",
+    "genres": ["electronic", "experimental"],
+    "homeCity": "Bristol",
+    "baseFeeMin": 1800,
+    "baseFeeMax": 3200,
+    "preferredCapacityMin": 180,
+    "preferredCapacityMax": 450,
+    "localDemandByCity": {
+      "bristol": 88,
+      "cardiff": 77,
+      "london": 70,
+      "manchester": 55,
+      "leeds": 49,
+      "brighton": 73
+    },
+    "momentumScore": 79,
+    "nearbyEventHistoryScore": 83,
+    "spotifyPopularity": 57,
+    "spotifyFollowers": 97000,
+    "instagramEngagementRate": 5.4,
+    "recentNearbyEvents": [
+      "Resident Advisor-featured warehouse set in Bristol",
+      "Strong turnout for Cardiff club headline",
+      "High save rate on latest EP campaign"
+    ],
+    "notes": "Club-leaning electronic act with good tastemaker momentum."
+  },
+  {
+    "id": "northline-poets",
+    "name": "Northline Poets",
+    "genres": ["folk", "indie"],
+    "homeCity": "Leeds",
+    "baseFeeMin": 1200,
+    "baseFeeMax": 2200,
+    "preferredCapacityMin": 120,
+    "preferredCapacityMax": 300,
+    "localDemandByCity": {
+      "leeds": 82,
+      "york": 78,
+      "manchester": 61,
+      "newcastle": 69,
+      "sheffield": 73,
+      "liverpool": 52
+    },
+    "momentumScore": 68,
+    "nearbyEventHistoryScore": 81,
+    "spotifyPopularity": 48,
+    "spotifyFollowers": 52000,
+    "instagramEngagementRate": 6.1,
+    "recentNearbyEvents": [
+      "Two consecutive sell-throughs in Yorkshire",
+      "Good support slot conversion in Newcastle",
+      "Strong email list response to acoustic tour dates"
+    ],
+    "notes": "Emerging folk-indie act with dependable intimate-room conversion."
+  },
+  {
+    "id": "midnight-method",
+    "name": "Midnight Method",
+    "genres": ["hip-hop", "electronic"],
+    "homeCity": "London",
+    "baseFeeMin": 3500,
+    "baseFeeMax": 6500,
+    "preferredCapacityMin": 350,
+    "preferredCapacityMax": 900,
+    "localDemandByCity": {
+      "london": 89,
+      "birmingham": 74,
+      "manchester": 72,
+      "bristol": 66,
+      "nottingham": 61,
+      "glasgow": 57
+    },
+    "momentumScore": 86,
+    "nearbyEventHistoryScore": 69,
+    "spotifyPopularity": 71,
+    "spotifyFollowers": 221000,
+    "instagramEngagementRate": 4.3,
+    "recentNearbyEvents": [
+      "Strong support billing on UK urban crossover run",
+      "Two recent tracks added to editorial playlists",
+      "Healthy clip performance across social"
+    ],
+    "notes": "Higher-budget crossover act with meaningful national momentum."
+  },
+  {
+    "id": "glass-arcade",
+    "name": "Glass Arcade",
+    "genres": ["pop", "electronic"],
+    "homeCity": "Brighton",
+    "baseFeeMin": 2200,
+    "baseFeeMax": 3800,
+    "preferredCapacityMin": 220,
+    "preferredCapacityMax": 550,
+    "localDemandByCity": {
+      "brighton": 87,
+      "london": 76,
+      "bristol": 64,
+      "southampton": 71,
+      "manchester": 54,
+      "cardiff": 46
+    },
+    "momentumScore": 73,
+    "nearbyEventHistoryScore": 72,
+    "spotifyPopularity": 59,
+    "spotifyFollowers": 111000,
+    "instagramEngagementRate": 5.8,
+    "recentNearbyEvents": [
+      "Strong coastal market conversion",
+      "High-performing short-form content around last release",
+      "Good secondary city turnout in Southampton"
+    ],
+    "notes": "Accessible alt-pop act suited to independent rooms scaling up."
+  },
+  {
+    "id": "iron-parade",
+    "name": "Iron Parade",
+    "genres": ["punk", "indie"],
+    "homeCity": "Glasgow",
+    "baseFeeMin": 1600,
+    "baseFeeMax": 3000,
+    "preferredCapacityMin": 180,
+    "preferredCapacityMax": 500,
+    "localDemandByCity": {
+      "glasgow": 90,
+      "edinburgh": 82,
+      "newcastle": 67,
+      "leeds": 62,
+      "manchester": 66,
+      "liverpool": 59
+    },
+    "momentumScore": 74,
+    "nearbyEventHistoryScore": 85,
+    "spotifyPopularity": 55,
+    "spotifyFollowers": 76000,
+    "instagramEngagementRate": 5.2,
+    "recentNearbyEvents": [
+      "Fast ticket movement in Scotland",
+      "Repeat promoter interest across northern cities",
+      "High merch spend suggests committed fanbase"
+    ],
+    "notes": "Punk-leaning regional draw with strong repeat performance data."
+  },
+  {
+    "id": "violet-hours",
+    "name": "Violet Hours",
+    "genres": ["jazz", "experimental"],
+    "homeCity": "London",
+    "baseFeeMin": 1400,
+    "baseFeeMax": 2600,
+    "preferredCapacityMin": 100,
+    "preferredCapacityMax": 240,
+    "localDemandByCity": {
+      "london": 81,
+      "bristol": 62,
+      "manchester": 58,
+      "leeds": 51,
+      "oxford": 69,
+      "cambridge": 66
+    },
+    "momentumScore": 71,
+    "nearbyEventHistoryScore": 74,
+    "spotifyPopularity": 46,
+    "spotifyFollowers": 43000,
+    "instagramEngagementRate": 6.7,
+    "recentNearbyEvents": [
+      "Jazz press mentions boosted discovery",
+      "Good walk-up numbers in seated rooms",
+      "Repeat bookings from culture-led venues"
+    ],
+    "notes": "Low-overhead jazz crossover option for discerning smaller-cap venues."
+  },
+  {
+    "id": "day-signal",
+    "name": "Day Signal",
+    "genres": ["hip-hop", "pop"],
+    "homeCity": "Birmingham",
+    "baseFeeMin": 2000,
+    "baseFeeMax": 3600,
+    "preferredCapacityMin": 250,
+    "preferredCapacityMax": 650,
+    "localDemandByCity": {
+      "birmingham": 85,
+      "manchester": 68,
+      "london": 65,
+      "nottingham": 74,
+      "leicester": 72,
+      "bristol": 57
+    },
+    "momentumScore": 82,
+    "nearbyEventHistoryScore": 70,
+    "spotifyPopularity": 61,
+    "spotifyFollowers": 129000,
+    "instagramEngagementRate": 4.7,
+    "recentNearbyEvents": [
+      "High presave to ticket intent correlation",
+      "Regional student market responding well",
+      "Recent support slot translated into follower growth"
+    ],
+    "notes": "Commercially viable emerging act with strong Midlands traction."
+  }
+]
