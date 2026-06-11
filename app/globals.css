@@ -223,6 +223,7 @@ input {
 
 .weightsNote p,
 .metaCard p,
+.signalGrid p,
 .whyBlock p,
 .emptyState p,
 .muted {
@@ -266,6 +267,35 @@ input {
   margin-top: 6px;
   font-size: 2.1rem;
   color: var(--accent);
+}
+
+.scoreBlock p {
+  margin: 10px 0 0;
+}
+
+.verdictPill {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.verdictBook {
+  background: rgba(130, 212, 193, 0.16);
+  color: var(--accent-2);
+}
+
+.verdictWatch {
+  background: rgba(246, 185, 77, 0.14);
+  color: var(--accent);
+}
+
+.verdictPass {
+  background: rgba(255, 141, 119, 0.14);
+  color: var(--danger);
 }
 
 .signalGrid,

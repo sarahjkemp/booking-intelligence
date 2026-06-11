@@ -43,11 +43,16 @@ export type ScoredArtist = {
   artist: ArtistRecord;
   rank: number;
   totalScore: number;
+  verdict: "Book" | "Watch" | "Pass";
   demandScore: number;
   genreScore: number;
   capacityFitScore: number;
   momentumScore: number;
   eventHistoryScore: number;
   budgetFitScore: number;
-  whyRecommended: string;
+  expectedTicketsLow: number;
+  expectedTicketsHigh: number;
+  expectedFillLow: number;
+  expectedFillHigh: number;
+  commercialSummary: string;
 };

@@ -1,13 +1,13 @@
-# Demand-Led Booking Intelligence MVP
+# Booking Intelligence Score MVP
 
-Demo-ready MVP web app for independent music venues to shortlist artists by likely local ticket demand.
+Demo-ready MVP web app for independent music venues to score artist bookings by commercial viability.
 
 ## What it does
 
 - Collects venue booking criteria: city, capacity, available date, genre preferences and budget range
 - Calls a simple backend API route
 - Scores a mock artist dataset against six weighted signals
-- Returns a ranked shortlist with practical explanations for each recommendation
+- Returns a ranked shortlist with a commercial booking score, verdict and expected turnout band
 
 ## Stack
 
@@ -39,7 +39,7 @@ Recommended setup:
 4. Use the default build and start commands from the blueprint:
    - Build command: `npm install && npm run build`
    - Start command: `npm run start`
-5. After deploy, open the `.onrender.com` URL and test the recommendation flow.
+5. After deploy, open the `.onrender.com` URL and test the scoring flow.
 
 Notes:
 
@@ -49,7 +49,7 @@ Notes:
 
 ## MVP scoring model
 
-The current ranking logic lives in `lib/scoring.ts`.
+The current booking score logic lives in `lib/scoring.ts`.
 
 Weights:
 
@@ -60,7 +60,7 @@ Weights:
 - Historical nearby performance: 10%
 - Budget fit: 10%
 
-The model is intentionally transparent and mock-driven so it is easy to demo, tune and replace with real sources later.
+The model is intentionally transparent and mock-driven so it is easy to demo now and replace with real commercial signals later.
 
 ## Mock data included
 
@@ -77,11 +77,11 @@ Each artist record contains:
 - Spotify popularity and follower placeholders
 - Instagram engagement placeholder
 - Recent nearby event notes
-- Recommendation note
+- Commercial note
 
 ## Best places to connect real APIs next
 
-`lib/scoring.ts` and `app/api/recommendations/route.ts` are the main integration points.
+`lib/scoring.ts` and `app/api/recommendations/route.ts` are the main integration points for replacing mock scoring with live demand and market data.
 
 Suggested next integrations:
 
@@ -101,5 +101,5 @@ Suggested next integrations:
 ## Notes
 
 - This is intentionally an MVP: no auth, payments, database or external API setup yet
-- The UI is designed to feel practical and venue-operator focused rather than consumer music facing
+- The UI is designed to feel like a commercial booking tool, not a consumer music product or analytics dashboard
 - The available date is captured now and can later be used for tour clash checks, routing logic and on-sale window timing

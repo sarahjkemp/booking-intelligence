@@ -16,6 +16,10 @@ function clamp(value: number, min = 0, max = 100) {
   return Math.min(max, Math.max(min, value));
 }
 
+function roundToNearestFive(value: number) {
+  return Math.max(0, Math.round(value / 5) * 5);
+}
+
 function scoreGenreMatch(artist: ArtistRecord, requestedGenres: SearchInput["genres"]) {
   if (requestedGenres.length === 0) {
     return 65;
@@ -64,7 +68,7 @@ function scoreLocalDemand(artist: ArtistRecord, city: string) {
   return clamp(average - 10, 35, 80);
 }
 
-function buildRecommendationReason(
+function buildCommercialSummary(
   artist: ArtistRecord,
   city: string,
   demandScore: number,
@@ -97,7 +101,42 @@ function buildRecommendationReason(
     reasons.push("balanced across demand, venue fit and budget");
   }
 
-  return `Recommended because of ${reasons.join(", ")}. ${artist.notes}`;
+  return `Commercially attractive because of ${reasons.join(", ")}. ${artist.notes}`;
+}
+
+function getVerdict(totalScore: number): "Book" | "Watch" | "Pass" {
+  if (totalScore >= 78) {
+    return "Book";
+  }
+
+  if (totalScore >= 62) {
+    return "Watch";
+  }
+
+  return "Pass";
+}
+
+function projectTurnoutRange(
+  capacity: number,
+  totalScore: number,
+  demandScore: number,
+  capacityFitScore: number,
+  momentumScore: number
+) {
+  const modeledFill = clamp(
+    totalScore * 0.72 + demandScore * 0.12 + capacityFitScore * 0.1 + momentumScore * 0.06,
+    24,
+    96
+  );
+  const lowFill = clamp(modeledFill - 10, 18, 92);
+  const highFill = clamp(modeledFill + 8, 25, 98);
+
+  return {
+    expectedFillLow: Math.round(lowFill),
+    expectedFillHigh: Math.round(highFill),
+    expectedTicketsLow: roundToNearestFive((capacity * lowFill) / 100),
+    expectedTicketsHigh: roundToNearestFive((capacity * highFill) / 100),
+  };
 }
 
 export function getRecommendations(input: SearchInput): ScoredArtist[] {
@@ -116,17 +155,27 @@ export function getRecommendations(input: SearchInput): ScoredArtist[] {
       momentumScore * WEIGHTS.momentum +
       eventHistoryScore * WEIGHTS.eventHistory +
       budgetFitScore * WEIGHTS.budgetFit;
+    const roundedTotalScore = Number(totalScore.toFixed(1));
+    const turnoutProjection = projectTurnoutRange(
+      input.capacity,
+      roundedTotalScore,
+      demandScore,
+      capacityFitScore,
+      momentumScore
+    );
 
     return {
       artist,
-      totalScore: Number(totalScore.toFixed(1)),
+      totalScore: roundedTotalScore,
+      verdict: getVerdict(roundedTotalScore),
       demandScore,
       genreScore,
       capacityFitScore,
       momentumScore,
       eventHistoryScore,
       budgetFitScore,
-      whyRecommended: buildRecommendationReason(
+      ...turnoutProjection,
+      commercialSummary: buildCommercialSummary(
         artist,
         input.city,
         demandScore,
@@ -152,3 +201,4 @@ export function getRecommendations(input: SearchInput): ScoredArtist[] {
 // - Songkick/Bandsintown: replace nearbyEventHistoryScore and recentNearbyEvents with verified ticketing/event data.
 // - Resident Advisor: enrich electronic acts with regional promoter / club demand signals.
 // - X API or a social listening source: add conversation velocity and announcement response trends to momentum.
+// - Ticketing / venue outcome data later can calibrate turnout projections and verdict thresholds.

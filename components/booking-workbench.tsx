@@ -70,25 +70,26 @@ export function BookingWorkbench() {
     <div className="shell">
       <section className="hero">
         <div className="heroCopy">
-          <p className="eyebrow">Demand-led booking intelligence</p>
-          <h1>Shortlist artists with the best local sell-through potential.</h1>
+          <p className="eyebrow">Commercial booking score</p>
+          <h1>Score acts by how commercially viable they look for your room.</h1>
           <p className="heroText">
-            Built for independent venues that need practical booking decisions, not vanity metrics.
-            Enter the room profile, date and budget, then rank artists by local demand, fit and momentum.
+            Built for independent venues that do not want more dashboards. Enter the room profile,
+            date and budget, then get a ranked booking score, commercial verdict and expected
+            turnout range for each act.
           </p>
         </div>
         <div className="heroStats">
           <div>
             <span>Inputs</span>
-            <strong>City, date, genre, cap, budget</strong>
+            <strong>Market, date, room, fee</strong>
           </div>
           <div>
             <span>Outputs</span>
-            <strong>Ranked, explained recommendations</strong>
+            <strong>Score, verdict, turnout band</strong>
           </div>
           <div>
             <span>Mode</span>
-            <strong>Mock data, API-ready structure</strong>
+            <strong>Commercial MVP, data-ready later</strong>
           </div>
         </div>
       </section>
@@ -97,11 +98,11 @@ export function BookingWorkbench() {
         <form className="panel formPanel" onSubmit={handleSubmit}>
           <div className="panelHeading">
             <div>
-              <p className="eyebrow">Venue brief</p>
-              <h2>Search criteria</h2>
+              <p className="eyebrow">Booking brief</p>
+              <h2>Commercial inputs</h2>
             </div>
             <button className="submitButton" type="submit" disabled={isLoading}>
-              {isLoading ? "Ranking artists..." : "Generate shortlist"}
+              {isLoading ? "Scoring acts..." : "Score shortlist"}
             </button>
           </div>
 
@@ -177,7 +178,7 @@ export function BookingWorkbench() {
           </div>
 
           <div className="weightsNote">
-            <span>Scoring weights</span>
+            <span>What drives the score</span>
             <p>
               Local demand 30% · Genre match 20% · Venue capacity fit 15% · Recent momentum 15% ·
               Nearby performance history 10% · Budget fit 10%
@@ -188,14 +189,14 @@ export function BookingWorkbench() {
         <div className="panel resultsPanel">
           <div className="panelHeading">
             <div>
-              <p className="eyebrow">Ranked artists</p>
-              <h2>Recommendation shortlist</h2>
+              <p className="eyebrow">Ranked commercial reads</p>
+              <h2>Booking shortlist</h2>
             </div>
           </div>
 
           {!hasSearched ? (
             <div className="emptyState">
-              <p>Use the default brief or update the inputs, then generate a ranked shortlist.</p>
+              <p>Use the default brief or update the inputs, then score the shortlist.</p>
             </div>
           ) : null}
 

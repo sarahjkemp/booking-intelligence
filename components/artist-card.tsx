@@ -13,6 +13,12 @@ function formatFollowers(followers: number) {
 
 export function ArtistCard({ result }: ArtistCardProps) {
   const { artist } = result;
+  const verdictClass =
+    result.verdict === "Book"
+      ? "verdictPill verdictBook"
+      : result.verdict === "Watch"
+        ? "verdictPill verdictWatch"
+        : "verdictPill verdictPass";
 
   return (
     <article className="artistCard">
@@ -25,43 +31,49 @@ export function ArtistCard({ result }: ArtistCardProps) {
           </p>
         </div>
         <div className="scoreBlock">
-          <span>Demand-led score</span>
+          <span>Commercial booking score</span>
           <strong>{result.totalScore}</strong>
+          <p className={verdictClass}>{result.verdict}</p>
         </div>
       </div>
 
       <div className="signalGrid">
         <div>
-          <span>Estimated local demand</span>
+          <span>Expected turnout</span>
+          <strong>
+            {result.expectedTicketsLow}-{result.expectedTicketsHigh}
+          </strong>
+          <p>
+            {result.expectedFillLow}-{result.expectedFillHigh}% of capacity
+          </p>
+        </div>
+        <div>
+          <span>Local draw</span>
           <strong>{result.demandScore}/100</strong>
         </div>
         <div>
-          <span>Venue size fit</span>
+          <span>Room fit</span>
           <strong>{result.capacityFitScore}/100</strong>
         </div>
         <div>
-          <span>Budget fit</span>
+          <span>Fee fit</span>
           <strong>{result.budgetFitScore}/100</strong>
-        </div>
-        <div>
-          <span>Recent momentum</span>
-          <strong>{result.momentumScore}/100</strong>
         </div>
       </div>
 
       <div className="metaGrid">
         <div className="metaCard">
-          <span>Spotify placeholder</span>
-          <strong>Popularity {artist.spotifyPopularity}/100</strong>
-          <p>{formatFollowers(artist.spotifyFollowers)} followers</p>
+          <span>Audience proxy</span>
+          <strong>Spotify popularity {artist.spotifyPopularity}/100</strong>
+          <p>{formatFollowers(artist.spotifyFollowers)} follower signal</p>
         </div>
         <div className="metaCard">
-          <span>Instagram placeholder</span>
+          <span>Social response proxy</span>
           <strong>{artist.instagramEngagementRate}% engagement</strong>
-          <p>Mock proxy for recent audience response</p>
+          <p>Mock signal for current audience responsiveness</p>
         </div>
         <div className="metaCard">
-          <span>Nearby event history</span>
+          <span>Market proof</span>
           <strong>{result.eventHistoryScore}/100</strong>
           <p>{artist.recentNearbyEvents[0]}</p>
         </div>
@@ -77,8 +89,8 @@ export function ArtistCard({ result }: ArtistCardProps) {
       </div>
 
       <div className="whyBlock">
-        <span>Why this artist is recommended</span>
-        <p>{result.whyRecommended}</p>
+        <span>Commercial read</span>
+        <p>{result.commercialSummary}</p>
       </div>
     </article>
   );
