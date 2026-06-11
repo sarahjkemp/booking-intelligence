@@ -27,6 +27,26 @@ npm run dev
 
 Then open `http://localhost:3000`.
 
+## Deploy on Render
+
+This repo is now set up for Render with [`render.yaml`](/Users/sarahkemp/Documents/New project/booking-intelligence-mvp/render.yaml).
+
+Recommended setup:
+
+1. In Render, choose `New +` then `Blueprint`.
+2. Connect the GitHub repo `sarahjkemp/booking-intelligence`.
+3. Render will detect `render.yaml` and create the web service.
+4. Use the default build and start commands from the blueprint:
+   - Build command: `npm install && npm run build`
+   - Start command: `npm run start`
+5. After deploy, open the `.onrender.com` URL and test the recommendation flow.
+
+Notes:
+
+- This is a Node web service, not a static site, because the MVP uses a Next.js API route.
+- No private environment variables are required yet for the mock-data version.
+- When real data integrations are added later, secrets like Spotify or social API keys should be added in Render environment settings.
+
 ## MVP scoring model
 
 The current ranking logic lives in `lib/scoring.ts`.
