@@ -1,5 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
+import { cityOrder, getArtistOverride, getGenreCityProfile } from "../lib/manualIntelligence.ts";
 
 const curatedGenres = {
   pop: `
@@ -758,16 +759,39 @@ function buildCuratedRecords(targetCount = 500) {
       const estimatedDraw = Math.round(
         genreProfile.maxDrawLow + tier * (genreProfile.maxDrawHigh - genreProfile.maxDrawLow)
       );
+      const artistOverride = getArtistOverride(artistName);
+      const cityProfile = getGenreCityProfile(genre.replace(/_/g, " "));
+      const citySignals = cityOrder.map((city) => {
+        const override = artistOverride?.citySignals?.[city];
+        const fallback = cityProfile[city];
+
+        return {
+          city,
+          score: override?.score ?? fallback.score,
+          source: "manual",
+          note: override?.note ?? fallback.note,
+        };
+      });
       const minCapacity = Math.max(100, Math.round((estimatedDraw * 0.65) / 25) * 25);
       const maxCapacity = Math.max(minCapacity + 100, Math.round((estimatedDraw * 1.2) / 25) * 25);
       const feeMin = Math.round((genreProfile.feeLow + tier * (genreProfile.feeHigh - genreProfile.feeLow)) / 10) * 10;
       const feeMax = Math.round((feeMin * 1.8) / 10) * 10;
+      const defaultComparableVenue = citySignals
+        .slice()
+        .sort((left, right) => right.score - left.score)[0];
+      const defaultNotes = [
+        `Manual intelligence layer says ${artistName} is most plausible in ${defaultComparableVenue.city}.`,
+        "Use this as a booker-confidence guide, not a perfect forecast.",
+      ];
 
       rows.push({
         artistName,
         spotifyArtistId: null,
         spotifyUrl: null,
         catalogueStatus: "curated",
+        researchStatus: "manual_curated",
+        confidenceTier: artistOverride?.confidenceTier ?? (tier > 0.58 ? "high" : tier > 0.28 ? "medium" : "low"),
+        bookerNotes: artistOverride?.bookerNotes ?? defaultNotes,
         genre: genre.replace(/_/g, " "),
         genres: [genre.replace(/_/g, " ")],
         spotifyFollowers: followers,
@@ -778,9 +802,33 @@ function buildCuratedRecords(targetCount = 500) {
           max: feeMax,
           currency: "GBP"
         },
+        estimatedDraw: {
+          min: Math.round(estimatedDraw * 0.8),
+          max: Math.round(estimatedDraw * 1.1),
+        },
         localDemandScore,
         momentumScore,
-        recentNearbyEvents: [],
+        recentNearbyEvents:
+          artistOverride?.recentNearbyEvents ??
+          [
+            `Manual signal: best UK fit currently looks strongest in ${defaultComparableVenue.city}.`,
+          ],
+        overexposureRisk:
+          artistOverride?.overexposureRisk ?? {
+            score: tier > 0.74 ? 62 : tier > 0.44 ? 38 : 24,
+            label: tier > 0.74 ? "medium" : "low",
+            notes: tier > 0.74 ? ["Higher-profile act may need careful timing in key UK markets."] : ["No obvious local saturation flag in the manual layer."],
+          },
+        citySignals,
+        comparableVenues:
+          artistOverride?.comparableVenues ?? [
+            {
+              city: defaultComparableVenue.city,
+              venue: `${defaultComparableVenue.city} comparable room`,
+              capacity: maxCapacity,
+              note: `Generated manual comparable based on estimated draw for ${artistName}.`,
+            },
+          ],
         venueCapacityFit: {
           min: minCapacity,
           max: maxCapacity

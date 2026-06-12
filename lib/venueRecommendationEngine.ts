@@ -14,6 +14,7 @@ export type ScoreBreakdown = {
   commercialMomentum: number;
   localRelevance: number;
   dataConfidence: number;
+  overexposurePenalty: number;
 };
 
 export type VenueRecommendation = {
@@ -34,6 +35,7 @@ const MAX_POINTS = {
   commercialMomentum: 20,
   localRelevance: 20,
   dataConfidence: 10,
+  overexposurePenalty: 10,
 } as const;
 
 const GENRE_FAMILIES: Record<string, string[]> = {
@@ -59,6 +61,12 @@ const SOURCE_PRIORITY: Record<ArtistDatabaseRecord["catalogueStatus"], number> =
   spotify_enriched: 2,
   curated: 1,
   fallback: 0,
+};
+
+const CONFIDENCE_PRIORITY: Record<NonNullable<ArtistDatabaseRecord["confidenceTier"]>, number> = {
+  high: 2,
+  medium: 1,
+  low: 0,
 };
 
 function clamp(value: number, min = 0, max = 100) {
@@ -115,10 +123,9 @@ function scoreGenreFit(artist: ArtistDatabaseRecord, requestedGenre: string) {
   return 0;
 }
 
-function scoreVenueCapacityFit(
-  capacityFit: ArtistDatabaseRecord["venueCapacityFit"],
-  requestedCapacity: number
-) {
+function scoreVenueCapacityFit(artist: ArtistDatabaseRecord, requestedCapacity: number) {
+  const capacityFit = artist.estimatedDraw ?? artist.venueCapacityFit;
+
   if (requestedCapacity >= capacityFit.min && requestedCapacity <= capacityFit.max) {
     return MAX_POINTS.venueCapacityFit;
   }
@@ -130,8 +137,12 @@ function scoreVenueCapacityFit(
   const slightlyAbove =
     requestedCapacity > capacityFit.max && requestedCapacity <= capacityFit.max + upperBuffer;
 
-  if (slightlyBelow || slightlyAbove) {
-    return 15;
+  if (slightlyBelow) {
+    return 20;
+  }
+
+  if (slightlyAbove) {
+    return 12;
   }
 
   return 0;
@@ -173,12 +184,31 @@ function getLocalRelevance(artist: ArtistDatabaseRecord, city: string) {
   };
 }
 
+function getOverexposurePenalty(artist: ArtistDatabaseRecord) {
+  const risk = artist.overexposureRisk?.score ?? 25;
+
+  if (risk >= 75) {
+    return MAX_POINTS.overexposurePenalty;
+  }
+
+  if (risk >= 45) {
+    return 5;
+  }
+
+  return 0;
+}
+
 function getConfidenceLabel(
   totalScore: number,
-  limitedData: boolean
+  limitedData: boolean,
+  artist: ArtistDatabaseRecord
 ): VenueRecommendation["confidenceLabel"] {
-  if (!limitedData && totalScore >= 75) {
+  if (artist.confidenceTier === "high" && totalScore >= 70) {
     return "High";
+  }
+
+  if (artist.confidenceTier === "medium" && totalScore >= 60) {
+    return "Medium";
   }
 
   if (limitedData || totalScore < 55) {
@@ -219,6 +249,10 @@ function buildRationale(args: {
     reasons.push(`good local relevance from ${localSignal}`);
   }
 
+  if (scoreBreakdown.overexposurePenalty === 0) {
+    reasons.push("low local overexposure risk");
+  }
+
   const baseLine =
     reasons.length > 0
       ? `${artist.artistName} stands out because of ${reasons.join(", ")}.`
@@ -253,6 +287,10 @@ function buildExplanation(
     lines.push("Room size fit is weak.");
   }
 
+  if (scoreBreakdown.overexposurePenalty >= 5) {
+    lines.push("Recent local activity may reduce urgency.");
+  }
+
   if (limitedData) {
     lines.push("Limited data: local or momentum inputs use placeholders.");
   }
@@ -272,21 +310,23 @@ export function recommendArtistsForVenue(args: {
   const genreMatchedArtists = preferredArtists.filter((artist) => scoreGenreFit(artist, input.genre) > 0);
   const poolAfterGenre = genreMatchedArtists.length > 0 ? genreMatchedArtists : preferredArtists;
   const capacityMatchedArtists = poolAfterGenre.filter(
-    (artist) => scoreVenueCapacityFit(artist.venueCapacityFit, input.capacity) > 0
+    (artist) => scoreVenueCapacityFit(artist, input.capacity) > 0
   );
   const scoringPool = capacityMatchedArtists.length >= 4 ? capacityMatchedArtists : poolAfterGenre;
 
   return scoringPool
     .map((artist) => {
       const genreFit = scoreGenreFit(artist, input.genre);
-      const venueCapacityFit = scoreVenueCapacityFit(artist.venueCapacityFit, input.capacity);
+      const venueCapacityFit = scoreVenueCapacityFit(artist, input.capacity);
       const commercialMomentum = getCommercialMomentum(artist);
       const localRelevance = getLocalRelevance(artist, input.city);
       const dataConfidence = DATA_CONFIDENCE_POINTS[artist.catalogueStatus];
+      const overexposurePenalty = getOverexposurePenalty(artist);
+      const hasManualCitySignal = artist.citySignals?.some(
+        (entry) => normalizeGenre(entry.city) === normalizeGenre(input.city)
+      );
       const limitedData =
-        artist.catalogueStatus !== "spotify_enriched" ||
-        typeof artist.spotifyPopularity !== "number" ||
-        !artist.citySignals?.some((entry) => normalizeGenre(entry.city) === normalizeGenre(input.city));
+        !hasManualCitySignal || !artist.bookerNotes?.length;
 
       const scoreBreakdown: ScoreBreakdown = {
         genreFit,
@@ -294,9 +334,16 @@ export function recommendArtistsForVenue(args: {
         commercialMomentum: commercialMomentum.points,
         localRelevance: localRelevance.points,
         dataConfidence,
+        overexposurePenalty,
       };
 
-      const totalScore = Object.values(scoreBreakdown).reduce((sum, value) => sum + value, 0);
+      const totalScore =
+        scoreBreakdown.genreFit +
+        scoreBreakdown.venueCapacityFit +
+        scoreBreakdown.commercialMomentum +
+        scoreBreakdown.localRelevance +
+        scoreBreakdown.dataConfidence -
+        scoreBreakdown.overexposurePenalty;
 
       return {
         artist,
@@ -312,11 +359,23 @@ export function recommendArtistsForVenue(args: {
           localSignal: localRelevance.signal,
         }),
         explanation: buildExplanation(scoreBreakdown, limitedData),
-        confidenceLabel: getConfidenceLabel(totalScore, limitedData),
+        confidenceLabel: getConfidenceLabel(totalScore, limitedData, artist),
         limitedData,
       };
     })
     .sort((left, right) => {
+      const scoreDelta = right.totalScore - left.totalScore;
+
+      if (Math.abs(scoreDelta) <= 4) {
+        const confidenceDelta =
+          CONFIDENCE_PRIORITY[right.artist.confidenceTier ?? "low"] -
+          CONFIDENCE_PRIORITY[left.artist.confidenceTier ?? "low"];
+
+        if (confidenceDelta !== 0) {
+          return confidenceDelta;
+        }
+      }
+
       const sourceDelta =
         SOURCE_PRIORITY[right.artist.catalogueStatus] - SOURCE_PRIORITY[left.artist.catalogueStatus];
 
@@ -324,7 +383,7 @@ export function recommendArtistsForVenue(args: {
         return sourceDelta;
       }
 
-      return right.totalScore - left.totalScore;
+      return scoreDelta;
     })
     .slice(0, 20)
     .map((result, index) => ({

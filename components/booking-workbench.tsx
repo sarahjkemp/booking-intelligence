@@ -20,6 +20,7 @@ type RecommendationResult = {
     commercialMomentum: number;
     localRelevance: number;
     dataConfidence: number;
+    overexposurePenalty: number;
   };
   rationale: string;
   explanation: string[];
