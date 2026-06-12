@@ -1,0 +1,150 @@
+[
+  {
+    "artistName": "Neon Harbor",
+    "events": [
+      {
+        "id": "nh-1",
+        "artistName": "Neon Harbor",
+        "datetime": "2026-05-02T19:30:00",
+        "venue": { "name": "Invisible Wind Factory", "city": "Liverpool", "region": "England", "country": "UK", "capacity": 420 }
+      },
+      {
+        "id": "nh-2",
+        "artistName": "Neon Harbor",
+        "datetime": "2026-04-12T19:30:00",
+        "venue": { "name": "Belgrave Music Hall", "city": "Leeds", "region": "England", "country": "UK", "capacity": 300 }
+      },
+      {
+        "id": "nh-3",
+        "artistName": "Neon Harbor",
+        "datetime": "2026-03-18T19:30:00",
+        "venue": { "name": "YES", "city": "Manchester", "region": "England", "country": "UK", "capacity": 250 }
+      }
+    ]
+  },
+  {
+    "artistName": "Static Velvet",
+    "events": [
+      {
+        "id": "sv-1",
+        "artistName": "Static Velvet",
+        "datetime": "2026-05-22T22:00:00",
+        "venue": { "name": "Motion", "city": "Bristol", "region": "England", "country": "UK", "capacity": 450 }
+      },
+      {
+        "id": "sv-2",
+        "artistName": "Static Velvet",
+        "datetime": "2026-04-28T22:00:00",
+        "venue": { "name": "The Vaults", "city": "Cardiff", "region": "Wales", "country": "UK", "capacity": 320 }
+      },
+      {
+        "id": "sv-3",
+        "artistName": "Static Velvet",
+        "datetime": "2026-03-30T22:00:00",
+        "venue": { "name": "Patterns", "city": "Brighton", "region": "England", "country": "UK", "capacity": 280 }
+      }
+    ]
+  },
+  {
+    "artistName": "Northline Poets",
+    "events": [
+      {
+        "id": "np-1",
+        "artistName": "Northline Poets",
+        "datetime": "2026-05-12T19:00:00",
+        "venue": { "name": "The Wardrobe", "city": "Leeds", "region": "England", "country": "UK", "capacity": 250 }
+      },
+      {
+        "id": "np-2",
+        "artistName": "Northline Poets",
+        "datetime": "2026-04-20T19:00:00",
+        "venue": { "name": "Cluny 2", "city": "Newcastle", "region": "England", "country": "UK", "capacity": 180 }
+      }
+    ]
+  },
+  {
+    "artistName": "Midnight Method",
+    "events": [
+      {
+        "id": "mm-1",
+        "artistName": "Midnight Method",
+        "datetime": "2026-05-15T20:00:00",
+        "venue": { "name": "O2 Ritz", "city": "Manchester", "region": "England", "country": "UK", "capacity": 700 }
+      },
+      {
+        "id": "mm-2",
+        "artistName": "Midnight Method",
+        "datetime": "2026-04-22T20:00:00",
+        "venue": { "name": "SWX", "city": "Bristol", "region": "England", "country": "UK", "capacity": 500 }
+      }
+    ]
+  },
+  {
+    "artistName": "Glass Arcade",
+    "events": [
+      {
+        "id": "ga-1",
+        "artistName": "Glass Arcade",
+        "datetime": "2026-05-09T19:00:00",
+        "venue": { "name": "Concorde 2", "city": "Brighton", "region": "England", "country": "UK", "capacity": 600 }
+      },
+      {
+        "id": "ga-2",
+        "artistName": "Glass Arcade",
+        "datetime": "2026-04-05T19:00:00",
+        "venue": { "name": "Thekla", "city": "Bristol", "region": "England", "country": "UK", "capacity": 400 }
+      }
+    ]
+  },
+  {
+    "artistName": "Iron Parade",
+    "events": [
+      {
+        "id": "ip-1",
+        "artistName": "Iron Parade",
+        "datetime": "2026-05-26T19:30:00",
+        "venue": { "name": "King Tut's", "city": "Glasgow", "region": "Scotland", "country": "UK", "capacity": 300 }
+      },
+      {
+        "id": "ip-2",
+        "artistName": "Iron Parade",
+        "datetime": "2026-04-11T19:30:00",
+        "venue": { "name": "The Grove", "city": "Newcastle", "region": "England", "country": "UK", "capacity": 250 }
+      }
+    ]
+  },
+  {
+    "artistName": "Violet Hours",
+    "events": [
+      {
+        "id": "vh-1",
+        "artistName": "Violet Hours",
+        "datetime": "2026-05-03T18:30:00",
+        "venue": { "name": "The Vortex", "city": "London", "region": "England", "country": "UK", "capacity": 200 }
+      },
+      {
+        "id": "vh-2",
+        "artistName": "Violet Hours",
+        "datetime": "2026-04-14T18:30:00",
+        "venue": { "name": "The Jam Jar", "city": "Bristol", "region": "England", "country": "UK", "capacity": 180 }
+      }
+    ]
+  },
+  {
+    "artistName": "Day Signal",
+    "events": [
+      {
+        "id": "ds-1",
+        "artistName": "Day Signal",
+        "datetime": "2026-05-18T20:00:00",
+        "venue": { "name": "The Mill", "city": "Birmingham", "region": "England", "country": "UK", "capacity": 450 }
+      },
+      {
+        "id": "ds-2",
+        "artistName": "Day Signal",
+        "datetime": "2026-04-09T20:00:00",
+        "venue": { "name": "Rescue Rooms", "city": "Nottingham", "region": "England", "country": "UK", "capacity": 400 }
+      }
+    ]
+  }
+]

@@ -4,18 +4,20 @@ Demo-ready MVP web app for independent music venues to score artist bookings by 
 
 ## What it does
 
-- Collects venue booking criteria: city, capacity, available date, genre preferences and budget range
+- Loads a seeded venue database for UK independent music rooms
+- Loads a curated mixed-genre artist catalogue for UK-bookable acts
+- Collects venue booking criteria: venue, city, capacity, available date and genre
 - Calls a simple backend API route
-- Scores a mock artist dataset against six weighted signals
-- Returns a ranked shortlist with a commercial booking score, verdict and expected turnout band
+- Returns a ranked top 20 artist list with demand score and recommendation rationale
 
 ## Stack
 
 - Next.js App Router
 - React
 - TypeScript
+- File-backed JSON database in `data/db`
 - API route at `app/api/recommendations/route.ts`
-- Mock dataset at `data/artists.json`
+- API-ready service adapters in `lib/services`
 
 ## Run locally
 
@@ -26,6 +28,27 @@ npm run dev
 ```
 
 Then open `http://localhost:3000`.
+
+If you want live Spotify enrichment locally, create a `.env.local` file from `.env.example` and add:
+
+```bash
+SPOTIFY_CLIENT_ID=
+SPOTIFY_CLIENT_SECRET=
+```
+
+To regenerate the artist database:
+
+```bash
+npm run seed:artists
+```
+
+This now writes a curated mixed-genre catalogue of 500 commercially relevant artists with nullable Spotify fields.
+
+If you want to test the separate Spotify enrichment pipeline later, use:
+
+```bash
+npm run seed:artists:spotify
+```
 
 ## Deploy on Render
 
@@ -44,49 +67,99 @@ Recommended setup:
 Notes:
 
 - This is a Node web service, not a static site, because the MVP uses a Next.js API route.
-- No private environment variables are required yet for the mock-data version.
+- No private environment variables are required for the curated catalogue version.
 - When real data integrations are added later, secrets like Spotify or social API keys should be added in Render environment settings.
 
 ## MVP scoring model
 
-The current booking score logic lives in `lib/scoring.ts`.
+The current recommendation logic lives in `lib/venueRecommendationEngine.ts`.
 
 Weights:
 
-- Local demand signal: 30%
-- Genre match: 20%
+- Spotify popularity: 30%
+- Spotify followers: 20%
+- Genre fit: 20%
 - Venue capacity fit: 15%
-- Recent momentum: 15%
-- Historical nearby performance: 10%
-- Budget fit: 10%
+- Momentum score: 15%
 
-The model is intentionally transparent and mock-driven so it is easy to demo now and replace with real commercial signals later.
+The model is intentionally transparent and designed so Bandsintown and Resident Advisor signals can be added later without changing the dashboard workflow.
+
+## Database schema
+
+Artist database schema:
+
+- `artistName`
+- `spotifyArtistId`
+- `spotifyUrl`
+- `catalogueStatus` (`curated`, `spotify_enriched`, `fallback`)
+- `genre`
+- `genres`
+- `spotifyFollowers`
+- `spotifyPopularity`
+- `imageUrl`
+- `estimatedFeeRange`
+- `localDemandScore`
+- `momentumScore`
+- `recentNearbyEvents`
+- `venueCapacityFit`
+
+Venue database schema:
+
+- `venueName`
+- `city`
+- `capacity`
+- `genreFocus`
+
+## Data source modules
+
+The app includes API-ready source modules for future enrichment:
+
+- `lib/services/spotifyService.ts`
+  - API-ready Spotify artist search and artist enrichment
+  - Uses mock JSON fallback from `data/mock/spotify-artists.json`
+- `lib/services/bandsintownService.ts`
+  - API-ready event lookup and location extraction
+  - Uses mock JSON fallback from `data/mock/bandsintown-events.json`
+- `lib/services/instagramManualService.ts`
+  - Manual CSV input from `data/manual/instagram-manual.csv`
+- `lib/services/residentAdvisorManualService.ts`
+  - Manual CSV input from `data/manual/resident-advisor-manual.csv`
+
+The seeded dashboard currently runs from the curated database layer, while these services are ready for future enrichment and reseeding.
+
+## Optional environment variables
+
+For live enrichment later, these env vars are supported:
+
+- `SPOTIFY_CLIENT_ID`
+- `SPOTIFY_CLIENT_SECRET`
+- `BANDSINTOWN_APP_ID`
+
+If those are not present, the app stays fully functional on local mock/manual data.
+
+The Spotify client-credentials flow in `lib/services/spotifyService.ts` reads all credentials from `process.env`.
 
 ## Mock data included
 
 Each artist record contains:
 
-- Artist name
-- Genres
-- City base
-- Budget range
-- Preferred venue size
-- Local demand by city
+- Real artist name
+- Catalogue status flag
+- Genre and genre tags
+- Estimated fee range
+- Venue capacity fit
+- Local demand score
 - Momentum score
-- Nearby performance history score
-- Spotify popularity and follower placeholders
-- Instagram engagement placeholder
-- Recent nearby event notes
-- Commercial note
+- Nullable Spotify ID / URL / image / popularity / followers fields
 
 ## Best places to connect real APIs next
 
-`lib/scoring.ts` and `app/api/recommendations/route.ts` are the main integration points for replacing mock scoring with live demand and market data.
+`scripts/seed-spotify-artists.mjs`, `lib/venueRecommendationEngine.ts`, and `app/api/recommendations/route.ts` are the main integration points for the next data phase.
 
 Suggested next integrations:
 
 - Spotify API
-  - Replace `spotifyPopularity` and `spotifyFollowers` with live artist audience data
+  - Enrich curated artists with `spotifyArtistId`, `spotifyUrl`, `imageUrl`, `spotifyPopularity` and `spotifyFollowers`
   - Add listener geography if available through internal enrichment
 - Instagram Graph API or creator analytics source
   - Replace the engagement placeholder with recent engagement, growth and location-aware audience clues

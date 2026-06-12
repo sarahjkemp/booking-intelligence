@@ -1,0 +1,86 @@
+[
+  {
+    "venueName": "Patterns",
+    "city": "Brighton",
+    "capacity": 300,
+    "genreFocus": ["electronic", "house", "indie"]
+  },
+  {
+    "venueName": "Concorde 2",
+    "city": "Brighton",
+    "capacity": 600,
+    "genreFocus": ["indie", "alternative", "electronic"]
+  },
+  {
+    "venueName": "Phonox",
+    "city": "London",
+    "capacity": 550,
+    "genreFocus": ["electronic", "techno", "house"]
+  },
+  {
+    "venueName": "Village Underground",
+    "city": "London",
+    "capacity": 700,
+    "genreFocus": ["electronic", "hip hop", "alternative"]
+  },
+  {
+    "venueName": "The Cause",
+    "city": "London",
+    "capacity": 400,
+    "genreFocus": ["electronic", "club", "underground"]
+  },
+  {
+    "venueName": "YES",
+    "city": "Manchester",
+    "capacity": 250,
+    "genreFocus": ["indie", "alternative", "pop"]
+  },
+  {
+    "venueName": "The White Hotel",
+    "city": "Manchester",
+    "capacity": 350,
+    "genreFocus": ["electronic", "experimental", "punk"]
+  },
+  {
+    "venueName": "Hidden",
+    "city": "Manchester",
+    "capacity": 500,
+    "genreFocus": ["electronic", "techno", "warehouse"]
+  },
+  {
+    "venueName": "Thekla",
+    "city": "Bristol",
+    "capacity": 400,
+    "genreFocus": ["indie", "electronic", "hip hop"]
+  },
+  {
+    "venueName": "Motion",
+    "city": "Bristol",
+    "capacity": 450,
+    "genreFocus": ["electronic", "techno", "house"]
+  },
+  {
+    "venueName": "Strange Brew",
+    "city": "Bristol",
+    "capacity": 300,
+    "genreFocus": ["leftfield", "electronic", "jazz"]
+  },
+  {
+    "venueName": "Belgrave Music Hall",
+    "city": "Leeds",
+    "capacity": 300,
+    "genreFocus": ["indie", "alternative", "hip hop"]
+  },
+  {
+    "venueName": "Wire",
+    "city": "Leeds",
+    "capacity": 250,
+    "genreFocus": ["electronic", "club", "underground"]
+  },
+  {
+    "venueName": "Headrow House",
+    "city": "Leeds",
+    "capacity": 350,
+    "genreFocus": ["indie", "leftfield", "electronic"]
+  }
+]

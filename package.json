@@ -9,7 +9,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed:artists": "node scripts/seed-curated-artists.mjs",
+    "seed:artists:spotify": "node --env-file=.env.local scripts/seed-spotify-artists.mjs"
   },
   "dependencies": {
     "next": "^15.3.3",

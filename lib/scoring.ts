@@ -1,7 +1,5 @@
-import artistData from "@/data/artists.json";
-import type { ArtistRecord, ScoredArtist, SearchInput } from "@/lib/types";
-
-const artists = artistData as unknown as ArtistRecord[];
+import { buildArtistDemandProfiles } from "@/lib/demandProfileBuilder";
+import type { ArtistDemandProfile, ScoredArtist, SearchInput, VenueCapacityHistoryEntry } from "@/lib/types";
 
 const WEIGHTS = {
   localDemand: 0.3,
@@ -20,32 +18,51 @@ function roundToNearestFive(value: number) {
   return Math.max(0, Math.round(value / 5) * 5);
 }
 
-function scoreGenreMatch(artist: ArtistRecord, requestedGenres: SearchInput["genres"]) {
+function normalizeGenre(value: string) {
+  return value.toLowerCase().replace(/[-\s]+/g, " ").trim();
+}
+
+function scoreGenreMatch(artist: ArtistDemandProfile, requestedGenres: SearchInput["genres"]) {
   if (requestedGenres.length === 0) {
     return 65;
   }
 
-  const matches = requestedGenres.filter((genre) => artist.genres.includes(genre)).length;
+  const normalizedGenres = artist.genreTags.map((genre) => normalizeGenre(genre));
+  const matches = requestedGenres.filter((genre) =>
+    normalizedGenres.some((tag) => tag.includes(normalizeGenre(genre)))
+  ).length;
+
   return clamp((matches / requestedGenres.length) * 100);
 }
 
-function scoreCapacityFit(artist: ArtistRecord, capacity: number) {
-  const { preferredCapacityMin, preferredCapacityMax } = artist;
-
-  if (capacity >= preferredCapacityMin && capacity <= preferredCapacityMax) {
-    return 95;
+function scoreCapacityFit(venueCapacityHistory: VenueCapacityHistoryEntry[], requestedCapacity: number) {
+  if (venueCapacityHistory.length === 0) {
+    return 60;
   }
 
-  const midpoint = (preferredCapacityMin + preferredCapacityMax) / 2;
-  const distance = Math.abs(capacity - midpoint);
-  const spread = Math.max((preferredCapacityMax - preferredCapacityMin) / 2, 60);
-  return clamp(100 - (distance / spread) * 45, 20, 95);
+  const capacities = venueCapacityHistory.map((entry) => entry.capacity).sort((left, right) => left - right);
+  const low = capacities[0];
+  const high = capacities[capacities.length - 1];
+
+  if (requestedCapacity >= low && requestedCapacity <= high) {
+    return 94;
+  }
+
+  const midpoint = (low + high) / 2;
+  const distance = Math.abs(requestedCapacity - midpoint);
+  const spread = Math.max((high - low) / 2, 75);
+
+  return clamp(100 - (distance / spread) * 40, 28, 94);
 }
 
-function scoreBudgetFit(artist: ArtistRecord, budgetMin: number, budgetMax: number) {
-  const artistMid = (artist.baseFeeMin + artist.baseFeeMax) / 2;
+function scoreBudgetFit(
+  estimatedFeeRange: ArtistDemandProfile["estimatedFeeRange"],
+  budgetMin: number,
+  budgetMax: number
+) {
+  const artistMid = (estimatedFeeRange.min + estimatedFeeRange.max) / 2;
 
-  if (budgetMax >= artist.baseFeeMin && budgetMin <= artist.baseFeeMax) {
+  if (budgetMax >= estimatedFeeRange.min && budgetMin <= estimatedFeeRange.max) {
     return 92;
   }
 
@@ -56,20 +73,25 @@ function scoreBudgetFit(artist: ArtistRecord, budgetMin: number, budgetMax: numb
   return clamp(88 - ((artistMid - budgetMax) / Math.max(budgetMax, 1)) * 60, 10, 88);
 }
 
-function scoreLocalDemand(artist: ArtistRecord, city: string) {
+function scoreLocalDemand(artist: ArtistDemandProfile, city: string) {
   const normalizedCity = city.trim().toLowerCase();
+  const directSignal = artist.citySignals.find((signal) => signal.city === normalizedCity);
 
-  if (artist.localDemandByCity[normalizedCity]) {
-    return artist.localDemandByCity[normalizedCity];
+  if (directSignal) {
+    return directSignal.score;
   }
 
-  const allCityScores = Object.values(artist.localDemandByCity);
-  const average = allCityScores.reduce((sum, value) => sum + value, 0) / allCityScores.length;
-  return clamp(average - 10, 35, 80);
+  return clamp(artist.localDemandScore - 10, 35, 82);
+}
+
+function scoreEventHistory(artist: ArtistDemandProfile) {
+  const volumeScore = artist.recentNearbyEvents.length * 14;
+  const capacityScore = artist.venueCapacityHistory.length * 8;
+  return clamp(40 + volumeScore + capacityScore, 35, 92);
 }
 
 function buildCommercialSummary(
-  artist: ArtistRecord,
+  artist: ArtistDemandProfile,
   city: string,
   demandScore: number,
   genreScore: number,
@@ -80,28 +102,28 @@ function buildCommercialSummary(
   const normalizedCity = city.trim();
 
   if (demandScore >= 80) {
-    reasons.push(`strong local demand signal around ${normalizedCity}`);
+    reasons.push(`strong local demand around ${normalizedCity}`);
   } else if (demandScore >= 65) {
-    reasons.push(`credible interest signal around ${normalizedCity}`);
+    reasons.push(`credible market pull around ${normalizedCity}`);
   }
 
   if (genreScore >= 80) {
-    reasons.push("clear genre alignment");
+    reasons.push("clear genre fit");
   }
 
   if (capacityFitScore >= 85) {
-    reasons.push("well matched to your room size");
+    reasons.push("a room size that makes sense");
   }
 
   if (budgetFitScore >= 85) {
-    reasons.push("comfortably within budget range");
+    reasons.push("a fee that should work");
   }
 
   if (reasons.length === 0) {
-    reasons.push("balanced across demand, venue fit and budget");
+    reasons.push("the overall commercial mix looks balanced");
   }
 
-  return `Commercially attractive because of ${reasons.join(", ")}. ${artist.notes}`;
+  return `${artist.artistName} looks strong because of ${reasons.join(", ")}. ${artist.notes}`;
 }
 
 function getVerdict(totalScore: number): "Book" | "Watch" | "Pass" {
@@ -139,14 +161,16 @@ function projectTurnoutRange(
   };
 }
 
-export function getRecommendations(input: SearchInput): ScoredArtist[] {
-  const ranked = artists.map((artist) => {
+export async function getRecommendations(input: SearchInput): Promise<ScoredArtist[]> {
+  const artistProfiles = await buildArtistDemandProfiles();
+
+  const ranked = artistProfiles.map((artist) => {
     const demandScore = scoreLocalDemand(artist, input.city);
     const genreScore = scoreGenreMatch(artist, input.genres);
-    const capacityFitScore = scoreCapacityFit(artist, input.capacity);
-    const budgetFitScore = scoreBudgetFit(artist, input.budgetMin, input.budgetMax);
+    const capacityFitScore = scoreCapacityFit(artist.venueCapacityHistory, input.capacity);
+    const budgetFitScore = scoreBudgetFit(artist.estimatedFeeRange, input.budgetMin, input.budgetMax);
     const momentumScore = artist.momentumScore;
-    const eventHistoryScore = artist.nearbyEventHistoryScore;
+    const eventHistoryScore = scoreEventHistory(artist);
 
     const totalScore =
       demandScore * WEIGHTS.localDemand +
@@ -187,18 +211,10 @@ export function getRecommendations(input: SearchInput): ScoredArtist[] {
   });
 
   return ranked
-    .sort((a, b) => b.totalScore - a.totalScore)
+    .sort((left, right) => right.totalScore - left.totalScore)
     .slice(0, 6)
     .map((result, index) => ({
       ...result,
       rank: index + 1,
     }));
 }
-
-// Future integration notes:
-// - Spotify API: replace spotifyPopularity and spotifyFollowers placeholders with live audience metrics.
-// - Instagram Graph API or creator analytics source: replace engagement placeholders with recent local fan activity.
-// - Songkick/Bandsintown: replace nearbyEventHistoryScore and recentNearbyEvents with verified ticketing/event data.
-// - Resident Advisor: enrich electronic acts with regional promoter / club demand signals.
-// - X API or a social listening source: add conversation velocity and announcement response trends to momentum.
-// - Ticketing / venue outcome data later can calibrate turnout projections and verdict thresholds.

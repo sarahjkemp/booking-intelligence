@@ -1,39 +1,101 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArtistCard } from "@/components/artist-card";
-import { genreOptions, type ScoredArtist, type SearchInput } from "@/lib/types";
 
-const initialForm: SearchInput = {
-  city: "Manchester",
-  capacity: 350,
-  date: "2026-09-18",
-  genres: ["indie", "electronic"],
-  budgetMin: 1500,
-  budgetMax: 4000,
+type VenueRecord = {
+  venueName: string;
+  city: string;
+  capacity: number;
+  genreFocus: string[];
 };
 
+type RecommendationResult = {
+  rank: number;
+  totalScore: number;
+  demandScore: number;
+  rationale: string;
+  artist: {
+    artistName: string;
+    genre: string;
+    genres: string[];
+    spotifyFollowers: number | null;
+    spotifyPopularity: number | null;
+    spotifyUrl: string | null;
+    imageUrl: string | null;
+    catalogueStatus: "curated" | "spotify_enriched" | "fallback";
+    estimatedFeeRange: {
+      min: number;
+      max: number;
+    };
+    localDemandScore: number;
+    recentNearbyEvents: string[];
+  };
+};
+
+const genreOptions = [
+  "pop",
+  "indie",
+  "alternative",
+  "rock",
+  "hip hop",
+  "r&b",
+  "electronic",
+  "house",
+  "techno",
+  "jazz",
+  "folk",
+  "afrobeats",
+  "punk"
+];
+
 export function BookingWorkbench() {
-  const [form, setForm] = useState<SearchInput>(initialForm);
-  const [results, setResults] = useState<ScoredArtist[]>([]);
+  const [venues, setVenues] = useState<VenueRecord[]>([]);
+  const [city, setCity] = useState("Manchester");
+  const [venueName, setVenueName] = useState("");
+  const [capacity, setCapacity] = useState(350);
+  const [genre, setGenre] = useState("indie");
+  const [date, setDate] = useState("2026-09-18");
+  const [results, setResults] = useState<RecommendationResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    async function loadVenues() {
+      const response = await fetch("/api/venues");
+      const payload = (await response.json()) as { venues: VenueRecord[] };
+      setVenues(payload.venues);
+    }
+
+    void loadVenues();
+  }, []);
+
+  const cityOptions = useMemo(
+    () => [...new Set(venues.map((venue) => venue.city))].sort(),
+    [venues]
+  );
+
+  const venuesForCity = useMemo(
+    () => venues.filter((venue) => venue.city === city),
+    [venues, city]
+  );
+
+  useEffect(() => {
+    if (venuesForCity.length === 0) {
+      return;
+    }
+
+    const preferredVenue =
+      venuesForCity.find((venue) => venue.venueName === venueName) ?? venuesForCity[0];
+
+    setVenueName(preferredVenue.venueName);
+    setCapacity(preferredVenue.capacity);
+    setGenre(preferredVenue.genreFocus[0] ?? "electronic");
+  }, [venuesForCity, venueName]);
+
   const featuredResult = results[0];
   const remainingResults = useMemo(() => results.slice(1), [results]);
-
-  function toggleGenre(genre: (typeof genreOptions)[number]) {
-    setForm((current) => {
-      const exists = current.genres.includes(genre);
-      return {
-        ...current,
-        genres: exists
-          ? current.genres.filter((item) => item !== genre)
-          : [...current.genres, genre],
-      };
-    });
-  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,7 +108,13 @@ export function BookingWorkbench() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          venueName,
+          city,
+          capacity,
+          date,
+          genre,
+        }),
       });
 
       if (!response.ok) {
@@ -57,11 +125,11 @@ export function BookingWorkbench() {
         return;
       }
 
-      const payload = (await response.json()) as { recommendations: ScoredArtist[] };
+      const payload = (await response.json()) as { recommendations: RecommendationResult[] };
       setResults(payload.recommendations);
       setHasSearched(true);
     } catch {
-      setError("Unable to score acts right now.");
+      setError("Unable to load recommendations right now.");
       setResults([]);
       setHasSearched(true);
     } finally {
@@ -72,33 +140,55 @@ export function BookingWorkbench() {
   return (
     <div className="shell">
       <section className="topBanner">
-        <p className="eyebrow">Booking score</p>
-        <h1>Find the act most likely to shift tickets.</h1>
-        <p className="heroText">
-          Put in the basics. Get a blunt commercial answer.
-        </p>
+        <p className="eyebrow">Venue intelligence</p>
+        <h1>Pick your venue. Get your top 20 acts.</h1>
+        <p className="heroText">Built for fast booking calls, not endless reading.</p>
       </section>
 
       <section className="workspace">
         <form className="briefPanel" onSubmit={handleSubmit}>
           <div className="briefHeader">
             <div>
-              <p className="eyebrow">Quick brief</p>
-              <h2>What are you trying to fill?</h2>
+              <p className="eyebrow">Venue dashboard</p>
+              <h2>Choose your room</h2>
             </div>
             <button className="submitButton" type="submit" disabled={isLoading}>
-              {isLoading ? "Scoring..." : "Get score"}
+              {isLoading ? "Loading..." : "Get top 20"}
             </button>
           </div>
 
           <div className="simpleGrid">
             <label>
               City
-              <input
-                value={form.city}
-                onChange={(event) => setForm({ ...form, city: event.target.value })}
-                placeholder="Manchester"
-              />
+              <select value={city} onChange={(event) => setCity(event.target.value)}>
+                {cityOptions.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Venue
+              <select
+                value={venueName}
+                onChange={(event) => {
+                  const selectedVenue = venuesForCity.find(
+                    (venue) => venue.venueName === event.target.value
+                  );
+                  setVenueName(event.target.value);
+                  if (selectedVenue) {
+                    setCapacity(selectedVenue.capacity);
+                  }
+                }}
+              >
+                {venuesForCity.map((venue) => (
+                  <option key={venue.venueName} value={venue.venueName}>
+                    {venue.venueName}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label>
@@ -106,62 +196,39 @@ export function BookingWorkbench() {
               <input
                 type="number"
                 min="50"
-                value={form.capacity}
-                onChange={(event) => setForm({ ...form, capacity: Number(event.target.value) })}
+                value={capacity}
+                onChange={(event) => setCapacity(Number(event.target.value))}
               />
+            </label>
+
+            <label>
+              Genre
+              <select value={genre} onChange={(event) => setGenre(event.target.value)}>
+                {genreOptions.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label>
               Date
-              <input
-                type="date"
-                value={form.date}
-                onChange={(event) => setForm({ ...form, date: event.target.value })}
-              />
+              <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
             </label>
-
-            <label>
-              Max budget
-              <input
-                type="number"
-                min="0"
-                step="100"
-                value={form.budgetMax}
-                onChange={(event) => setForm({ ...form, budgetMax: Number(event.target.value) })}
-              />
-            </label>
-          </div>
-
-          <div className="genreBlock">
-            <span className="fieldLabel">Pick your genres</span>
-            <div className="chipRow">
-              {genreOptions.map((genre) => {
-                const active = form.genres.includes(genre);
-                return (
-                  <button
-                    key={genre}
-                    type="button"
-                    className={active ? "genreChip active" : "genreChip"}
-                    onClick={() => toggleGenre(genre)}
-                  >
-                    {genre}
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           <div className="microNote">
-            Score uses local demand, room fit, recent momentum and fee fit.
+            Scoring: popularity 30% · followers 20% · genre fit 20% · room fit 15% · momentum 15%
           </div>
         </form>
 
         <section className="resultsPanel">
           {!hasSearched ? (
             <div className="launchState">
-              <div className="launchBadge">Top call</div>
-              <h2>Press “Get score” and we’ll tell you who looks safest.</h2>
-              <p>Big answer first. No dashboard archaeology.</p>
+              <div className="launchBadge">Dashboard</div>
+              <h2>Choose a venue and we’ll rank the best artists for it.</h2>
+              <p>Top 20 curated artists first, with demand score and quick rationale.</p>
             </div>
           ) : null}
 
@@ -169,13 +236,13 @@ export function BookingWorkbench() {
 
           {featuredResult ? (
             <div className="resultsStack">
-              <div className="sectionTag">Best booking call</div>
+              <div className="sectionTag">Top recommendation</div>
               <ArtistCard result={featuredResult} featured />
 
-              <div className="sectionTag">Other options</div>
+              <div className="sectionTag">Top 20 artists</div>
               <div className="resultsList compactList">
                 {remainingResults.map((result) => (
-                  <ArtistCard key={result.artist.id} result={result} />
+                  <ArtistCard key={result.artist.artistName} result={result} />
                 ))}
               </div>
             </div>

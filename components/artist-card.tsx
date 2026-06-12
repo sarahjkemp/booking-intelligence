@@ -1,91 +1,99 @@
-import type { ScoredArtist } from "@/lib/types";
+type RecommendationArtist = {
+  artistName: string;
+  genre: string;
+  genres: string[];
+  spotifyFollowers: number | null;
+  spotifyPopularity: number | null;
+  spotifyUrl: string | null;
+  imageUrl: string | null;
+  catalogueStatus: "curated" | "spotify_enriched" | "fallback";
+  estimatedFeeRange: {
+    min: number;
+    max: number;
+  };
+  localDemandScore: number;
+  recentNearbyEvents: string[];
+};
+
+type RecommendationResult = {
+  rank: number;
+  totalScore: number;
+  demandScore: number;
+  rationale: string;
+  artist: RecommendationArtist;
+};
 
 type ArtistCardProps = {
-  result: ScoredArtist;
+  result: RecommendationResult;
   featured?: boolean;
 };
 
-function getReasons(result: ScoredArtist) {
-  const reasons: string[] = [];
+function formatFollowers(value: number) {
+  return new Intl.NumberFormat("en-GB", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
 
-  if (result.demandScore >= 80) {
-    reasons.push("Strong local demand");
+function labelForStatus(status: RecommendationArtist["catalogueStatus"]) {
+  if (status === "spotify_enriched") {
+    return "Spotify data";
   }
 
-  if (result.capacityFitScore >= 85) {
-    reasons.push("Good fit for your room");
+  if (status === "fallback") {
+    return "Fallback";
   }
 
-  if (result.budgetFitScore >= 85) {
-    reasons.push("Fits the budget");
-  }
-
-  if (result.momentumScore >= 78) {
-    reasons.push("Momentum looks healthy");
-  }
-
-  if (reasons.length < 3 && result.artist.recentNearbyEvents[0]) {
-    reasons.push(result.artist.recentNearbyEvents[0]);
-  }
-
-  return reasons.slice(0, 3);
+  return "Curated";
 }
 
 export function ArtistCard({ result, featured = false }: ArtistCardProps) {
   const { artist } = result;
-  const reasons = getReasons(result);
-  const verdictClass =
-    result.verdict === "Book"
-      ? "verdictPill verdictBook"
-      : result.verdict === "Watch"
-        ? "verdictPill verdictWatch"
-        : "verdictPill verdictPass";
 
   return (
-    <article className={featured ? "artistCard featuredCard" : "artistCard"}>
+    <article className={featured ? "artistCard featuredCard" : "artistCard compactCard"}>
       <div className="artistHeader">
         <div>
-          <p className="rankPill">{featured ? "Best option" : `Option ${result.rank}`}</p>
-          <h3>{artist.name}</h3>
+          <p className="rankPill">{featured ? "Best fit" : `Rank ${result.rank}`}</p>
+          <h3>{artist.artistName}</h3>
           <p className="artistMeta">
-            {artist.genres.join(" / ")} · {artist.homeCity}
+            {artist.genre} · {labelForStatus(artist.catalogueStatus)}
           </p>
         </div>
         <div className="scoreBadgeWrap">
           <div className="scoreBadge">{Math.round(result.totalScore)}</div>
-          <p className={verdictClass}>{result.verdict}</p>
         </div>
       </div>
 
       <div className="headlineStrip">
         <div className="headlineTile">
-          <span>Likely tickets</span>
-          <strong>
-            {result.expectedTicketsLow}-{result.expectedTicketsHigh}
-          </strong>
+          <span>Demand score</span>
+          <strong>{result.demandScore}</strong>
         </div>
         <div className="headlineTile">
-          <span>Likely fill</span>
-          <strong>
-            {result.expectedFillLow}-{result.expectedFillHigh}%
-          </strong>
+          <span>Audience</span>
+          <strong>{artist.spotifyPopularity ?? "N/A"}</strong>
         </div>
         <div className="headlineTile">
-          <span>Fee range</span>
+          <span>Reach</span>
           <strong>
-            {artist.baseFeeMin}-{artist.baseFeeMax}
+            {typeof artist.spotifyFollowers === "number" ? formatFollowers(artist.spotifyFollowers) : "N/A"}
           </strong>
         </div>
       </div>
 
-      <p className="commercialLine">{result.commercialSummary}</p>
+      <p className="commercialLine">{result.rationale}</p>
 
       <div className="reasonRow">
-        {reasons.map((reason) => (
-          <div key={reason} className="reasonChip">
-            {reason}
-          </div>
-        ))}
+        <div className="reasonChip">
+          Fee {artist.estimatedFeeRange.min}-{artist.estimatedFeeRange.max}
+        </div>
+        <div className="reasonChip">
+          Local demand {artist.localDemandScore}
+        </div>
+        {artist.recentNearbyEvents[0] ? (
+          <div className="reasonChip">{artist.recentNearbyEvents[0]}</div>
+        ) : null}
       </div>
     </article>
   );

@@ -1,0 +1,82 @@
+[
+  {
+    "artistName": "Neon Harbor",
+    "id": "spotify-neon-harbor",
+    "name": "Neon Harbor",
+    "genres": ["indie pop", "alt pop"],
+    "followers": 142000,
+    "popularity": 63,
+    "externalUrl": "https://open.spotify.com/artist/mock-neon-harbor",
+    "imageUrl": "https://i.scdn.co/image/mock-neon-harbor"
+  },
+  {
+    "artistName": "Static Velvet",
+    "id": "spotify-static-velvet",
+    "name": "Static Velvet",
+    "genres": ["electronic", "leftfield"],
+    "followers": 97000,
+    "popularity": 57,
+    "externalUrl": "https://open.spotify.com/artist/mock-static-velvet",
+    "imageUrl": "https://i.scdn.co/image/mock-static-velvet"
+  },
+  {
+    "artistName": "Northline Poets",
+    "id": "spotify-northline-poets",
+    "name": "Northline Poets",
+    "genres": ["folk", "indie folk"],
+    "followers": 52000,
+    "popularity": 48,
+    "externalUrl": "https://open.spotify.com/artist/mock-northline-poets",
+    "imageUrl": "https://i.scdn.co/image/mock-northline-poets"
+  },
+  {
+    "artistName": "Midnight Method",
+    "id": "spotify-midnight-method",
+    "name": "Midnight Method",
+    "genres": ["hip hop", "electronic"],
+    "followers": 221000,
+    "popularity": 71,
+    "externalUrl": "https://open.spotify.com/artist/mock-midnight-method",
+    "imageUrl": "https://i.scdn.co/image/mock-midnight-method"
+  },
+  {
+    "artistName": "Glass Arcade",
+    "id": "spotify-glass-arcade",
+    "name": "Glass Arcade",
+    "genres": ["pop", "electropop"],
+    "followers": 111000,
+    "popularity": 59,
+    "externalUrl": "https://open.spotify.com/artist/mock-glass-arcade",
+    "imageUrl": "https://i.scdn.co/image/mock-glass-arcade"
+  },
+  {
+    "artistName": "Iron Parade",
+    "id": "spotify-iron-parade",
+    "name": "Iron Parade",
+    "genres": ["punk", "indie rock"],
+    "followers": 76000,
+    "popularity": 55,
+    "externalUrl": "https://open.spotify.com/artist/mock-iron-parade",
+    "imageUrl": "https://i.scdn.co/image/mock-iron-parade"
+  },
+  {
+    "artistName": "Violet Hours",
+    "id": "spotify-violet-hours",
+    "name": "Violet Hours",
+    "genres": ["jazz", "experimental jazz"],
+    "followers": 43000,
+    "popularity": 46,
+    "externalUrl": "https://open.spotify.com/artist/mock-violet-hours",
+    "imageUrl": "https://i.scdn.co/image/mock-violet-hours"
+  },
+  {
+    "artistName": "Day Signal",
+    "id": "spotify-day-signal",
+    "name": "Day Signal",
+    "genres": ["hip hop", "pop rap"],
+    "followers": 129000,
+    "popularity": 61,
+    "externalUrl": "https://open.spotify.com/artist/mock-day-signal",
+    "imageUrl": "https://i.scdn.co/image/mock-day-signal"
+  }
+]

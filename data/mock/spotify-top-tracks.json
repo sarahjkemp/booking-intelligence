@@ -1,0 +1,68 @@
+[
+  {
+    "artistId": "spotify-neon-harbor",
+    "artistName": "Neon Harbor",
+    "tracks": [
+      { "id": "nh-track-1", "name": "Afterglow District", "albumName": "Night Signal", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/nh-track-1", "popularity": 61 },
+      { "id": "nh-track-2", "name": "Satellite Hearts", "albumName": "Night Signal", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/nh-track-2", "popularity": 58 },
+      { "id": "nh-track-3", "name": "Over The Viaduct", "albumName": "Northbound", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/nh-track-3", "popularity": 56 }
+    ]
+  },
+  {
+    "artistId": "spotify-static-velvet",
+    "artistName": "Static Velvet",
+    "tracks": [
+      { "id": "sv-track-1", "name": "Blue Strobes", "albumName": "Warehouse Weather", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/sv-track-1", "popularity": 55 },
+      { "id": "sv-track-2", "name": "Cardiff 4AM", "albumName": "Warehouse Weather", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/sv-track-2", "popularity": 53 },
+      { "id": "sv-track-3", "name": "Glass Circuit", "albumName": "Glass Circuit", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/sv-track-3", "popularity": 50 }
+    ]
+  },
+  {
+    "artistId": "spotify-northline-poets",
+    "artistName": "Northline Poets",
+    "tracks": [
+      { "id": "np-track-1", "name": "Moorland Lights", "albumName": "Northline", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/np-track-1", "popularity": 46 },
+      { "id": "np-track-2", "name": "Postcode Rain", "albumName": "Northline", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/np-track-2", "popularity": 45 }
+    ]
+  },
+  {
+    "artistId": "spotify-midnight-method",
+    "artistName": "Midnight Method",
+    "tracks": [
+      { "id": "mm-track-1", "name": "Fallback Season", "albumName": "Method Tape", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/mm-track-1", "popularity": 68 },
+      { "id": "mm-track-2", "name": "Low Light Call", "albumName": "Method Tape", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/mm-track-2", "popularity": 64 }
+    ]
+  },
+  {
+    "artistId": "spotify-glass-arcade",
+    "artistName": "Glass Arcade",
+    "tracks": [
+      { "id": "ga-track-1", "name": "Brighton Exit", "albumName": "Ocean Glow", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/ga-track-1", "popularity": 57 },
+      { "id": "ga-track-2", "name": "Warm Static", "albumName": "Ocean Glow", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/ga-track-2", "popularity": 54 }
+    ]
+  },
+  {
+    "artistId": "spotify-iron-parade",
+    "artistName": "Iron Parade",
+    "tracks": [
+      { "id": "ip-track-1", "name": "Redline Repeat", "albumName": "Northern Damage", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/ip-track-1", "popularity": 52 },
+      { "id": "ip-track-2", "name": "Merch Table Kids", "albumName": "Northern Damage", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/ip-track-2", "popularity": 49 }
+    ]
+  },
+  {
+    "artistId": "spotify-violet-hours",
+    "artistName": "Violet Hours",
+    "tracks": [
+      { "id": "vh-track-1", "name": "Blue Room Delay", "albumName": "Seated Lights", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/vh-track-1", "popularity": 43 },
+      { "id": "vh-track-2", "name": "After Set", "albumName": "Seated Lights", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/vh-track-2", "popularity": 41 }
+    ]
+  },
+  {
+    "artistId": "spotify-day-signal",
+    "artistName": "Day Signal",
+    "tracks": [
+      { "id": "ds-track-1", "name": "Midlands Run", "albumName": "Signal Chain", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/ds-track-1", "popularity": 59 },
+      { "id": "ds-track-2", "name": "Fast Lane Presave", "albumName": "Signal Chain", "previewUrl": null, "spotifyUrl": "https://open.spotify.com/track/ds-track-2", "popularity": 57 }
+    ]
+  }
+]
