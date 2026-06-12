@@ -51,12 +51,6 @@ const GENRE_FAMILIES: Record<string, string[]> = {
   afrobeats: ["afrobeats", "global"],
 };
 
-const DATA_CONFIDENCE_POINTS: Record<ArtistDatabaseRecord["catalogueStatus"], number> = {
-  spotify_enriched: 10,
-  curated: 7,
-  fallback: 2,
-};
-
 const SOURCE_PRIORITY: Record<ArtistDatabaseRecord["catalogueStatus"], number> = {
   spotify_enriched: 2,
   curated: 1,
@@ -112,8 +106,12 @@ function scoreGenreFit(artist: ArtistDatabaseRecord, requestedGenre: string) {
   const requested = normalizeGenre(requestedGenre);
   const artistGenres = [artist.genre, ...artist.genres].map(normalizeGenre);
 
-  if (artistGenres.includes(requested)) {
+  if (normalizeGenre(artist.genre) === requested) {
     return MAX_POINTS.genreFit;
+  }
+
+  if (artistGenres.includes(requested)) {
+    return 22;
   }
 
   if (isBroadGenreMatch(artist, requestedGenre)) {
@@ -125,9 +123,13 @@ function scoreGenreFit(artist: ArtistDatabaseRecord, requestedGenre: string) {
 
 function scoreVenueCapacityFit(artist: ArtistDatabaseRecord, requestedCapacity: number) {
   const capacityFit = artist.estimatedDraw ?? artist.venueCapacityFit;
+  const midpoint = (capacityFit.min + capacityFit.max) / 2;
+  const halfRange = Math.max((capacityFit.max - capacityFit.min) / 2, 1);
+  const distanceFromMid = Math.abs(requestedCapacity - midpoint);
+  const exactFitScore = Math.max(18, Math.round(25 - (distanceFromMid / halfRange) * 7));
 
   if (requestedCapacity >= capacityFit.min && requestedCapacity <= capacityFit.max) {
-    return MAX_POINTS.venueCapacityFit;
+    return exactFitScore;
   }
 
   const lowerBuffer = capacityFit.min * 0.2;
@@ -138,11 +140,13 @@ function scoreVenueCapacityFit(artist: ArtistDatabaseRecord, requestedCapacity: 
     requestedCapacity > capacityFit.max && requestedCapacity <= capacityFit.max + upperBuffer;
 
   if (slightlyBelow) {
-    return 20;
+    const lowerDistance = capacityFit.min - requestedCapacity;
+    return Math.max(12, Math.round(20 - (lowerDistance / Math.max(lowerBuffer, 1)) * 8));
   }
 
   if (slightlyAbove) {
-    return 12;
+    const upperDistance = requestedCapacity - capacityFit.max;
+    return Math.max(8, Math.round(16 - (upperDistance / Math.max(upperBuffer, 1)) * 8));
   }
 
   return 0;
@@ -196,6 +200,18 @@ function getOverexposurePenalty(artist: ArtistDatabaseRecord) {
   }
 
   return 0;
+}
+
+function getDataConfidencePoints(artist: ArtistDatabaseRecord) {
+  if (artist.catalogueStatus === "spotify_enriched") {
+    return artist.confidenceTier === "high" ? 10 : artist.confidenceTier === "medium" ? 9 : 8;
+  }
+
+  if (artist.catalogueStatus === "curated") {
+    return artist.confidenceTier === "high" ? 9 : artist.confidenceTier === "medium" ? 7 : 5;
+  }
+
+  return 2;
 }
 
 function getConfidenceLabel(
@@ -320,7 +336,7 @@ export function recommendArtistsForVenue(args: {
       const venueCapacityFit = scoreVenueCapacityFit(artist, input.capacity);
       const commercialMomentum = getCommercialMomentum(artist);
       const localRelevance = getLocalRelevance(artist, input.city);
-      const dataConfidence = DATA_CONFIDENCE_POINTS[artist.catalogueStatus];
+      const dataConfidence = getDataConfidencePoints(artist);
       const overexposurePenalty = getOverexposurePenalty(artist);
       const hasManualCitySignal = artist.citySignals?.some(
         (entry) => normalizeGenre(entry.city) === normalizeGenre(input.city)

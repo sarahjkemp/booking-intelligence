@@ -89,6 +89,10 @@ export function ArtistCard({ result, featured = false }: ArtistCardProps) {
           <span>Momentum</span>
           <strong>{result.scoreBreakdown.commercialMomentum}/20</strong>
         </div>
+        <div className="headlineTile">
+          <span>Data confidence</span>
+          <strong>{result.scoreBreakdown.dataConfidence}/10</strong>
+        </div>
       </div>
 
       <p className="commercialLine">{result.rationale}</p>
@@ -103,7 +107,7 @@ export function ArtistCard({ result, featured = false }: ArtistCardProps) {
 
       <div className="reasonRow">
         <div className="reasonChip">Local {result.scoreBreakdown.localRelevance}/20</div>
-        <div className="reasonChip">Confidence {result.scoreBreakdown.dataConfidence}/10</div>
+        <div className="reasonChip">Risk -{result.scoreBreakdown.overexposurePenalty}</div>
         <div className="reasonChip">
           Fee {artist.estimatedFeeRange.min}-{artist.estimatedFeeRange.max}
         </div>
