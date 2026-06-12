@@ -19,7 +19,17 @@ type RecommendationResult = {
   rank: number;
   totalScore: number;
   demandScore: number;
+  scoreBreakdown: {
+    genreFit: number;
+    venueCapacityFit: number;
+    commercialMomentum: number;
+    localRelevance: number;
+    dataConfidence: number;
+  };
   rationale: string;
+  explanation: string[];
+  confidenceLabel: "High" | "Medium" | "Low";
+  limitedData: boolean;
   artist: RecommendationArtist;
 };
 
@@ -57,7 +67,7 @@ export function ArtistCard({ result, featured = false }: ArtistCardProps) {
           <p className="rankPill">{featured ? "Best fit" : `Rank ${result.rank}`}</p>
           <h3>{artist.artistName}</h3>
           <p className="artistMeta">
-            {artist.genre} · {labelForStatus(artist.catalogueStatus)}
+            {artist.genre} · {labelForStatus(artist.catalogueStatus)} · {result.confidenceLabel} confidence
           </p>
         </div>
         <div className="scoreBadgeWrap">
@@ -67,33 +77,49 @@ export function ArtistCard({ result, featured = false }: ArtistCardProps) {
 
       <div className="headlineStrip">
         <div className="headlineTile">
-          <span>Demand score</span>
-          <strong>{result.demandScore}</strong>
+          <span>Genre fit</span>
+          <strong>{result.scoreBreakdown.genreFit}/25</strong>
         </div>
         <div className="headlineTile">
-          <span>Audience</span>
-          <strong>{artist.spotifyPopularity ?? "N/A"}</strong>
+          <span>Room fit</span>
+          <strong>{result.scoreBreakdown.venueCapacityFit}/25</strong>
         </div>
         <div className="headlineTile">
-          <span>Reach</span>
-          <strong>
-            {typeof artist.spotifyFollowers === "number" ? formatFollowers(artist.spotifyFollowers) : "N/A"}
-          </strong>
+          <span>Momentum</span>
+          <strong>{result.scoreBreakdown.commercialMomentum}/20</strong>
         </div>
       </div>
 
       <p className="commercialLine">{result.rationale}</p>
 
       <div className="reasonRow">
+        {result.explanation.slice(0, 2).map((line) => (
+          <div key={line} className="reasonChip">
+            {line}
+          </div>
+        ))}
+      </div>
+
+      <div className="reasonRow">
+        <div className="reasonChip">Local {result.scoreBreakdown.localRelevance}/20</div>
+        <div className="reasonChip">Confidence {result.scoreBreakdown.dataConfidence}/10</div>
         <div className="reasonChip">
           Fee {artist.estimatedFeeRange.min}-{artist.estimatedFeeRange.max}
         </div>
-        <div className="reasonChip">
-          Local demand {artist.localDemandScore}
-        </div>
+        {result.limitedData ? <div className="reasonChip">Limited data</div> : null}
         {artist.recentNearbyEvents[0] ? (
           <div className="reasonChip">{artist.recentNearbyEvents[0]}</div>
         ) : null}
+      </div>
+
+      <div className="reasonRow">
+        <div className="reasonChip">
+          Audience {artist.spotifyPopularity ?? "N/A"}
+        </div>
+        <div className="reasonChip">
+          Reach {typeof artist.spotifyFollowers === "number" ? formatFollowers(artist.spotifyFollowers) : "N/A"}
+        </div>
+        <div className="reasonChip">Demand {result.demandScore}</div>
       </div>
     </article>
   );

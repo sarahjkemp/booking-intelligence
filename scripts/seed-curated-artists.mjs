@@ -709,6 +709,20 @@ function clamp(value, min = 0, max = 100) {
   return Math.min(max, Math.max(min, value));
 }
 
+const genreProfiles = {
+  pop: { maxDrawLow: 250, maxDrawHigh: 2600, feeLow: 900, feeHigh: 12000 },
+  indie: { maxDrawLow: 180, maxDrawHigh: 1800, feeLow: 700, feeHigh: 9000 },
+  rock: { maxDrawLow: 200, maxDrawHigh: 2200, feeLow: 800, feeHigh: 10000 },
+  electronic: { maxDrawLow: 150, maxDrawHigh: 1600, feeLow: 600, feeHigh: 8500 },
+  hip_hop: { maxDrawLow: 180, maxDrawHigh: 2200, feeLow: 800, feeHigh: 11000 },
+  rnb_soul: { maxDrawLow: 150, maxDrawHigh: 1400, feeLow: 700, feeHigh: 8000 },
+  jazz: { maxDrawLow: 120, maxDrawHigh: 900, feeLow: 500, feeHigh: 5000 },
+  folk: { maxDrawLow: 120, maxDrawHigh: 850, feeLow: 450, feeHigh: 4500 },
+  afrobeats_global: { maxDrawLow: 160, maxDrawHigh: 1800, feeLow: 700, feeHigh: 9500 },
+  country_roots: { maxDrawLow: 150, maxDrawHigh: 1400, feeLow: 650, feeHigh: 7000 },
+  punk_metal: { maxDrawLow: 150, maxDrawHigh: 1600, feeLow: 650, feeHigh: 8000 }
+};
+
 function parseNames(block) {
   return block
     .split("\n")
@@ -723,6 +737,8 @@ function buildCuratedRecords(targetCount = 500) {
 
   for (const [genre, block] of Object.entries(curatedGenres)) {
     const names = parseNames(block);
+    const genreProfile = genreProfiles[genre] ?? genreProfiles.indie;
+    const maxIndex = Math.max(names.length - 1, 1);
 
     names.forEach((artistName, genreIndex) => {
       const dedupeKey = artistName.toLowerCase();
@@ -734,16 +750,18 @@ function buildCuratedRecords(targetCount = 500) {
       seen.add(dedupeKey);
       runningIndex += 1;
 
-      const popularityTier = Math.max(0, 100 - genreIndex);
-      const popularity = clamp(Math.round(32 + popularityTier * 0.48), 26, 88);
-      const followers = Math.round(25000 + popularityTier * 7000);
-      const localDemandScore = clamp(Math.round(popularity * 0.78));
-      const momentumScore = clamp(Math.round(popularity * 0.74 + (runningIndex % 11)));
-      const minCapacity = Math.max(150, Math.round((120 + popularity * 18) / 25) * 25);
-      const maxCapacity = Math.max(
-        minCapacity + 150,
-        Math.round((minCapacity + 220 + popularity * 12) / 25) * 25
+      const tier = 1 - genreIndex / maxIndex;
+      const popularity = clamp(Math.round(28 + tier * 58), 24, 86);
+      const followers = Math.round(14000 + tier * 860000);
+      const localDemandScore = clamp(Math.round(22 + tier * 54 + (runningIndex % 5)));
+      const momentumScore = clamp(Math.round(24 + tier * 52 + (runningIndex % 7)));
+      const estimatedDraw = Math.round(
+        genreProfile.maxDrawLow + tier * (genreProfile.maxDrawHigh - genreProfile.maxDrawLow)
       );
+      const minCapacity = Math.max(100, Math.round((estimatedDraw * 0.65) / 25) * 25);
+      const maxCapacity = Math.max(minCapacity + 100, Math.round((estimatedDraw * 1.2) / 25) * 25);
+      const feeMin = Math.round((genreProfile.feeLow + tier * (genreProfile.feeHigh - genreProfile.feeLow)) / 10) * 10;
+      const feeMax = Math.round((feeMin * 1.8) / 10) * 10;
 
       rows.push({
         artistName,
@@ -756,8 +774,8 @@ function buildCuratedRecords(targetCount = 500) {
         spotifyPopularity: popularity,
         imageUrl: null,
         estimatedFeeRange: {
-          min: Math.round((600 + popularity * 55) / 10) * 10,
-          max: Math.round((1200 + popularity * 110) / 10) * 10,
+          min: feeMin,
+          max: feeMax,
           currency: "GBP"
         },
         localDemandScore,

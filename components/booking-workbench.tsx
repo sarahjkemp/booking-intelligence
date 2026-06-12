@@ -14,7 +14,17 @@ type RecommendationResult = {
   rank: number;
   totalScore: number;
   demandScore: number;
+  scoreBreakdown: {
+    genreFit: number;
+    venueCapacityFit: number;
+    commercialMomentum: number;
+    localRelevance: number;
+    dataConfidence: number;
+  };
   rationale: string;
+  explanation: string[];
+  confidenceLabel: "High" | "Medium" | "Low";
+  limitedData: boolean;
   artist: {
     artistName: string;
     genre: string;
@@ -33,6 +43,17 @@ type RecommendationResult = {
   };
 };
 
+type DemoScenario = {
+  id: string;
+  title: string;
+  brief: string;
+  city: string;
+  venue: string;
+  capacity: number;
+  genre: string;
+  topRecommendations: RecommendationResult[];
+};
+
 const genreOptions = [
   "pop",
   "indie",
@@ -49,7 +70,7 @@ const genreOptions = [
   "punk"
 ];
 
-export function BookingWorkbench() {
+export function BookingWorkbench({ demoScenarios = [] }: { demoScenarios?: DemoScenario[] }) {
   const [venues, setVenues] = useState<VenueRecord[]>([]);
   const [city, setCity] = useState("Manchester");
   const [venueName, setVenueName] = useState("");
@@ -219,7 +240,7 @@ export function BookingWorkbench() {
           </div>
 
           <div className="microNote">
-            Scoring: popularity 30% · followers 20% · genre fit 20% · room fit 15% · momentum 15%
+            Scoring: genre 25 · room fit 25 · momentum 20 · local relevance 20 · data confidence 10
           </div>
         </form>
 
@@ -228,7 +249,7 @@ export function BookingWorkbench() {
             <div className="launchState">
               <div className="launchBadge">Dashboard</div>
               <h2>Choose a venue and we’ll rank the best artists for it.</h2>
-              <p>Top 20 curated artists first, with demand score and quick rationale.</p>
+              <p>Top 20 curated artists first, with a score breakdown and clear confidence label.</p>
             </div>
           ) : null}
 
@@ -248,6 +269,51 @@ export function BookingWorkbench() {
             </div>
           ) : null}
         </section>
+      </section>
+
+      <section className="scenarioSection">
+        <div className="scenarioIntro">
+          <p className="eyebrow">Demo scenarios</p>
+          <h2>10 venue briefs to pressure-test recommendation quality.</h2>
+          <p>These are meant to pass the common-sense check, not pretend to be perfect prediction.</p>
+        </div>
+
+        <div className="scenarioGrid">
+          {demoScenarios.map((scenario) => {
+            const topPick = scenario.topRecommendations[0];
+
+            return (
+              <article key={scenario.id} className="scenarioCard">
+                <p className="eyebrow">{scenario.city}</p>
+                <h3>{scenario.title}</h3>
+                <p className="scenarioMeta">
+                  {scenario.venue} · {scenario.capacity} cap · {scenario.genre}
+                </p>
+                <p className="scenarioBrief">{scenario.brief}</p>
+
+                {topPick ? (
+                  <div className="scenarioTopPick">
+                    <div className="scenarioTopRow">
+                      <strong>{topPick.artist.artistName}</strong>
+                      <span>{topPick.totalScore}/100</span>
+                    </div>
+                    <p>{topPick.rationale}</p>
+                    <div className="scenarioList">
+                      {scenario.topRecommendations.slice(1, 4).map((result) => (
+                        <div key={`${scenario.id}-${result.artist.artistName}`} className="scenarioListItem">
+                          <span>{result.artist.artistName}</span>
+                          <span>{result.totalScore}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="scenarioBrief">No recommendation available for this scenario yet.</p>
+                )}
+              </article>
+            );
+          })}
+        </div>
       </section>
     </div>
   );

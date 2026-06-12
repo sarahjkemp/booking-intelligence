@@ -36,16 +36,17 @@ export async function POST(request: Request) {
     query: body,
     recommendations,
     scoringModel: {
-      weights: {
-        spotifyPopularity: 0.3,
-        spotifyFollowers: 0.2,
-        genreFit: 0.2,
-        venueCapacityFit: 0.15,
-        momentumScore: 0.15,
+      points: {
+        genreFit: 25,
+        venueCapacityFit: 25,
+        commercialMomentum: 20,
+        localRelevance: 20,
+        dataConfidence: 10,
       },
       notes: [
-        "Bandsintown event history and Resident Advisor signals are reserved for future enrichment.",
-        "The MVP currently scores from the seeded artist database plus venue fit logic.",
+        "Scores use the curated catalogue first and reserve fallback records for low-data cases.",
+        "When Spotify or city-level signals are missing, the MVP shows limited data and uses placeholder momentum/local demand fields.",
+        "Bandsintown and Resident Advisor are reserved for future enrichment.",
       ],
     },
   });

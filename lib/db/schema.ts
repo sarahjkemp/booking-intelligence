@@ -16,6 +16,11 @@ export type ArtistDatabaseRecord = {
   localDemandScore: number;
   momentumScore: number;
   recentNearbyEvents: string[];
+  citySignals?: Array<{
+    city: string;
+    score: number;
+    source: "spotify" | "bandsintown" | "resident-advisor" | "manual";
+  }>;
   venueCapacityFit: {
     min: number;
     max: number;

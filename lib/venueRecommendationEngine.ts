@@ -8,21 +8,33 @@ export type VenueRecommendationInput = {
   genre: string;
 };
 
+export type ScoreBreakdown = {
+  genreFit: number;
+  venueCapacityFit: number;
+  commercialMomentum: number;
+  localRelevance: number;
+  dataConfidence: number;
+};
+
 export type VenueRecommendation = {
   rank: number;
   artist: ArtistDatabaseRecord;
   totalScore: number;
   demandScore: number;
+  scoreBreakdown: ScoreBreakdown;
   rationale: string;
+  explanation: string[];
+  confidenceLabel: "High" | "Medium" | "Low";
+  limitedData: boolean;
 };
 
-const WEIGHTS = {
-  spotifyPopularity: 0.3,
-  spotifyFollowers: 0.2,
-  genreFit: 0.2,
-  venueCapacityFit: 0.15,
-  momentumScore: 0.15,
-};
+const MAX_POINTS = {
+  genreFit: 25,
+  venueCapacityFit: 25,
+  commercialMomentum: 20,
+  localRelevance: 20,
+  dataConfidence: 10,
+} as const;
 
 const GENRE_FAMILIES: Record<string, string[]> = {
   alternative: ["alternative", "indie", "rock"],
@@ -33,8 +45,14 @@ const GENRE_FAMILIES: Record<string, string[]> = {
   house: ["house", "electronic"],
   techno: ["techno", "electronic"],
   "hip hop": ["hip hop", "rap", "grime"],
-  "r&b": ["r&b", "rnb", "soul"],
+  rnb: ["rnb", "soul"],
   afrobeats: ["afrobeats", "global"],
+};
+
+const DATA_CONFIDENCE_POINTS: Record<ArtistDatabaseRecord["catalogueStatus"], number> = {
+  spotify_enriched: 10,
+  curated: 7,
+  fallback: 2,
 };
 
 const SOURCE_PRIORITY: Record<ArtistDatabaseRecord["catalogueStatus"], number> = {
@@ -47,29 +65,22 @@ function clamp(value: number, min = 0, max = 100) {
   return Math.min(max, Math.max(min, value));
 }
 
-function normalizeFollowers(followers: number) {
-  const score = Math.log10(Math.max(followers, 1)) * 20;
-  return clamp(Math.round(score));
-}
-
-function getPopularityScore(artist: ArtistDatabaseRecord) {
-  if (typeof artist.spotifyPopularity === "number") {
-    return artist.spotifyPopularity;
-  }
-
-  return clamp(Math.round(artist.localDemandScore * 0.75 + artist.momentumScore * 0.25));
-}
-
-function getFollowerScore(artist: ArtistDatabaseRecord) {
-  if (typeof artist.spotifyFollowers === "number") {
-    return normalizeFollowers(artist.spotifyFollowers);
-  }
-
-  return clamp(Math.round(artist.localDemandScore * 0.8));
-}
-
 function normalizeGenre(value: string) {
-  return value.toLowerCase().replace(/&/g, "and").trim();
+  const normalized = value.toLowerCase().trim().replace(/\s+/g, " ");
+
+  if (["hip-hop", "hip hop", "rap", "grime"].includes(normalized)) {
+    return normalized === "grime" ? "grime" : "hip hop";
+  }
+
+  if (["r&b", "rnb", "rnb soul", "r and b", "randb", "soul"].includes(normalized)) {
+    return normalized === "soul" ? "soul" : "rnb";
+  }
+
+  if (normalized === "afrobeats global") {
+    return "afrobeats";
+  }
+
+  return normalized.replace(/&/g, "and");
 }
 
 function getGenreAliases(genre: string) {
@@ -77,27 +88,31 @@ function getGenreAliases(genre: string) {
   return new Set([normalized, ...(GENRE_FAMILIES[normalized] ?? [])].map(normalizeGenre));
 }
 
-function isGenreMatch(artist: ArtistDatabaseRecord, requestedGenre: string, venue?: VenueDatabaseRecord) {
+function isBroadGenreMatch(artist: ArtistDatabaseRecord, requestedGenre: string) {
   const requestedAliases = getGenreAliases(requestedGenre);
-  const artistGenres = [artist.genre, ...artist.genres].map(normalizeGenre);
+  const artistAliases = new Set(
+    [artist.genre, ...artist.genres]
+      .map((genre) => [...getGenreAliases(genre)])
+      .flat()
+      .map(normalizeGenre)
+  );
 
-  return artistGenres.some((genre) => requestedAliases.has(genre));
+  return [...artistAliases].some((genre) => requestedAliases.has(genre));
 }
 
-function scoreGenreFit(artistGenre: string, requestedGenre: string, venue?: VenueDatabaseRecord) {
-  const normalizedArtist = normalizeGenre(artistGenre);
-  const normalizedRequested = normalizeGenre(requestedGenre);
-  const requestedAliases = getGenreAliases(requestedGenre);
+function scoreGenreFit(artist: ArtistDatabaseRecord, requestedGenre: string) {
+  const requested = normalizeGenre(requestedGenre);
+  const artistGenres = [artist.genre, ...artist.genres].map(normalizeGenre);
 
-  if (requestedAliases.has(normalizedArtist)) {
-    return 100;
+  if (artistGenres.includes(requested)) {
+    return MAX_POINTS.genreFit;
   }
 
-  if (normalizedArtist.includes(normalizedRequested) || normalizedRequested.includes(normalizedArtist)) {
-    return 72;
+  if (isBroadGenreMatch(artist, requestedGenre)) {
+    return 15;
   }
 
-  return 8;
+  return 0;
 }
 
 function scoreVenueCapacityFit(
@@ -105,51 +120,144 @@ function scoreVenueCapacityFit(
   requestedCapacity: number
 ) {
   if (requestedCapacity >= capacityFit.min && requestedCapacity <= capacityFit.max) {
-    return 96;
+    return MAX_POINTS.venueCapacityFit;
   }
 
-  const midpoint = (capacityFit.min + capacityFit.max) / 2;
-  const spread = Math.max((capacityFit.max - capacityFit.min) / 2, 75);
-  const distance = Math.abs(requestedCapacity - midpoint);
+  const lowerBuffer = capacityFit.min * 0.2;
+  const upperBuffer = capacityFit.max * 0.2;
+  const slightlyBelow =
+    requestedCapacity < capacityFit.min && requestedCapacity >= capacityFit.min - lowerBuffer;
+  const slightlyAbove =
+    requestedCapacity > capacityFit.max && requestedCapacity <= capacityFit.max + upperBuffer;
 
-  return clamp(100 - (distance / spread) * 40, 25, 96);
+  if (slightlyBelow || slightlyAbove) {
+    return 15;
+  }
+
+  return 0;
 }
 
-function buildRationale(
-  artist: ArtistDatabaseRecord,
-  popularityScore: number,
-  followerScore: number,
-  genreFitScore: number,
-  venueCapacityFitScore: number,
-  momentumScore: number
-) {
+function normalizeToPoints(value: number, maxPoints: number) {
+  return Math.round((clamp(value) / 100) * maxPoints);
+}
+
+function getCommercialMomentum(artist: ArtistDatabaseRecord) {
+  if (typeof artist.spotifyPopularity === "number") {
+    return {
+      points: normalizeToPoints(artist.spotifyPopularity, MAX_POINTS.commercialMomentum),
+      signal: "spotify popularity" as const,
+    };
+  }
+
+  return {
+    points: normalizeToPoints(artist.momentumScore, MAX_POINTS.commercialMomentum),
+    signal: "placeholder momentum" as const,
+  };
+}
+
+function getLocalRelevance(artist: ArtistDatabaseRecord, city: string) {
+  const signal = artist.citySignals?.find(
+    (entry) => normalizeGenre(entry.city) === normalizeGenre(city)
+  );
+
+  if (signal) {
+    return {
+      points: normalizeToPoints(signal.score, MAX_POINTS.localRelevance),
+      signal: "city signal" as const,
+    };
+  }
+
+  return {
+    points: normalizeToPoints(artist.localDemandScore, MAX_POINTS.localRelevance),
+    signal: "placeholder local demand" as const,
+  };
+}
+
+function getConfidenceLabel(
+  totalScore: number,
+  limitedData: boolean
+): VenueRecommendation["confidenceLabel"] {
+  if (!limitedData && totalScore >= 75) {
+    return "High";
+  }
+
+  if (limitedData || totalScore < 55) {
+    return "Low";
+  }
+
+  return "Medium";
+}
+
+function buildRationale(args: {
+  artist: ArtistDatabaseRecord;
+  scoreBreakdown: ScoreBreakdown;
+  input: VenueRecommendationInput;
+  limitedData: boolean;
+  momentumSignal: "spotify popularity" | "placeholder momentum";
+  localSignal: "city signal" | "placeholder local demand";
+}) {
+  const { artist, scoreBreakdown, limitedData, momentumSignal, localSignal } = args;
   const reasons: string[] = [];
 
-  if (popularityScore >= 75) {
-    reasons.push("strong audience signal");
+  if (scoreBreakdown.genreFit === MAX_POINTS.genreFit) {
+    reasons.push("exact genre match");
+  } else if (scoreBreakdown.genreFit > 0) {
+    reasons.push("broad genre match");
   }
 
-  if (followerScore >= 75) {
-    reasons.push("solid following");
-  }
-
-  if (genreFitScore >= 90) {
-    reasons.push("clear genre fit");
-  }
-
-  if (venueCapacityFitScore >= 88) {
+  if (scoreBreakdown.venueCapacityFit === MAX_POINTS.venueCapacityFit) {
     reasons.push("good room-size fit");
+  } else if (scoreBreakdown.venueCapacityFit > 0) {
+    reasons.push("close to the right room size");
   }
 
-  if (momentumScore >= 75) {
-    reasons.push("healthy momentum");
+  if (scoreBreakdown.commercialMomentum >= 14) {
+    reasons.push(`strong commercial momentum from ${momentumSignal}`);
   }
 
-  if (reasons.length === 0) {
-    reasons.push("balanced across the key commercial signals");
+  if (scoreBreakdown.localRelevance >= 14) {
+    reasons.push(`good local relevance from ${localSignal}`);
   }
 
-  return `${artist.artistName} scores well because of ${reasons.join(", ")}.`;
+  const baseLine =
+    reasons.length > 0
+      ? `${artist.artistName} stands out because of ${reasons.join(", ")}.`
+      : `${artist.artistName} is a weaker commercial fit on the current inputs.`;
+
+  if (limitedData) {
+    return `${baseLine} Limited data: some parts of this score use placeholders rather than live local or Spotify signals.`;
+  }
+
+  return baseLine;
+}
+
+function buildExplanation(
+  scoreBreakdown: ScoreBreakdown,
+  limitedData: boolean
+) {
+  const lines: string[] = [];
+
+  if (scoreBreakdown.genreFit === MAX_POINTS.genreFit) {
+    lines.push("Exact genre match for this brief.");
+  } else if (scoreBreakdown.genreFit > 0) {
+    lines.push("Related genre, but not a perfect match.");
+  } else {
+    lines.push("Genre match is weak.");
+  }
+
+  if (scoreBreakdown.venueCapacityFit === MAX_POINTS.venueCapacityFit) {
+    lines.push("Estimated draw fits the room well.");
+  } else if (scoreBreakdown.venueCapacityFit > 0) {
+    lines.push("Draw is close to the room size, but not ideal.");
+  } else {
+    lines.push("Room size fit is weak.");
+  }
+
+  if (limitedData) {
+    lines.push("Limited data: local or momentum inputs use placeholders.");
+  }
+
+  return lines;
 }
 
 export function recommendArtistsForVenue(args: {
@@ -157,45 +265,55 @@ export function recommendArtistsForVenue(args: {
   venues: VenueDatabaseRecord[];
   input: VenueRecommendationInput;
 }) {
-  const { artists, venues, input } = args;
-  const matchedVenue = input.venueName
-    ? venues.find((venue) => venue.venueName === input.venueName)
-    : undefined;
+  const { artists, input } = args;
   const preferredArtists = artists.some((artist) => artist.catalogueStatus !== "fallback")
     ? artists.filter((artist) => artist.catalogueStatus !== "fallback")
     : artists;
-  const genreMatchedArtists = preferredArtists.filter((artist) =>
-    isGenreMatch(artist, input.genre, matchedVenue)
+  const genreMatchedArtists = preferredArtists.filter((artist) => scoreGenreFit(artist, input.genre) > 0);
+  const poolAfterGenre = genreMatchedArtists.length > 0 ? genreMatchedArtists : preferredArtists;
+  const capacityMatchedArtists = poolAfterGenre.filter(
+    (artist) => scoreVenueCapacityFit(artist.venueCapacityFit, input.capacity) > 0
   );
-  const scoringPool = genreMatchedArtists.length > 0 ? genreMatchedArtists : preferredArtists;
+  const scoringPool = capacityMatchedArtists.length >= 4 ? capacityMatchedArtists : poolAfterGenre;
 
   return scoringPool
     .map((artist) => {
-      const popularityScore = getPopularityScore(artist);
-      const followerScore = getFollowerScore(artist);
-      const genreFitScore = scoreGenreFit(artist.genre, input.genre, matchedVenue);
-      const venueCapacityFitScore = scoreVenueCapacityFit(artist.venueCapacityFit, input.capacity);
-      const momentumScore = artist.momentumScore;
+      const genreFit = scoreGenreFit(artist, input.genre);
+      const venueCapacityFit = scoreVenueCapacityFit(artist.venueCapacityFit, input.capacity);
+      const commercialMomentum = getCommercialMomentum(artist);
+      const localRelevance = getLocalRelevance(artist, input.city);
+      const dataConfidence = DATA_CONFIDENCE_POINTS[artist.catalogueStatus];
+      const limitedData =
+        artist.catalogueStatus !== "spotify_enriched" ||
+        typeof artist.spotifyPopularity !== "number" ||
+        !artist.citySignals?.some((entry) => normalizeGenre(entry.city) === normalizeGenre(input.city));
 
-      const totalScore =
-        popularityScore * WEIGHTS.spotifyPopularity +
-        followerScore * WEIGHTS.spotifyFollowers +
-        genreFitScore * WEIGHTS.genreFit +
-        venueCapacityFitScore * WEIGHTS.venueCapacityFit +
-        momentumScore * WEIGHTS.momentumScore;
+      const scoreBreakdown: ScoreBreakdown = {
+        genreFit,
+        venueCapacityFit,
+        commercialMomentum: commercialMomentum.points,
+        localRelevance: localRelevance.points,
+        dataConfidence,
+      };
+
+      const totalScore = Object.values(scoreBreakdown).reduce((sum, value) => sum + value, 0);
 
       return {
         artist,
-        totalScore: Number(totalScore.toFixed(1)),
+        totalScore,
         demandScore: artist.localDemandScore,
-        rationale: buildRationale(
+        scoreBreakdown,
+        rationale: buildRationale({
           artist,
-          popularityScore,
-          followerScore,
-          genreFitScore,
-          venueCapacityFitScore,
-          momentumScore
-        ),
+          scoreBreakdown,
+          input,
+          limitedData,
+          momentumSignal: commercialMomentum.signal,
+          localSignal: localRelevance.signal,
+        }),
+        explanation: buildExplanation(scoreBreakdown, limitedData),
+        confidenceLabel: getConfidenceLabel(totalScore, limitedData),
+        limitedData,
       };
     })
     .sort((left, right) => {
